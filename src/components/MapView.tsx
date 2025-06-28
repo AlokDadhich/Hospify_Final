@@ -16,9 +16,9 @@ interface Hospital {
   phone?: string;
   rating?: number;
   distance?: string;
-  position: {
-    lat: number;
-    lng: number;
+  location: {
+    latitude: number;
+    longitude: number;
   };
   resources?: {
     icuBeds: { available: number; total: number };
@@ -78,13 +78,22 @@ export const MapView: React.FC<MapViewProps> = ({
   // Load Google Maps script
   useEffect(() => {
     const loadGoogleMaps = () => {
-      if (window.google) {
+      // Check if Google Maps is already loaded
+      if (window.google && window.google.maps) {
         initializeMap();
+        return;
+      }
+
+      // Check if script is already being loaded
+      const existingScript = document.getElementById('google-maps-script');
+      if (existingScript) {
+        existingScript.addEventListener('load', initializeMap);
         return;
       }
 
       setSearchStatus('Loading Google Maps...');
       const script = document.createElement('script');
+      script.id = 'google-maps-script';
       script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`;
       script.async = true;
       script.defer = true;
@@ -179,9 +188,9 @@ export const MapView: React.FC<MapViewProps> = ({
                   address: place.vicinity || place.formatted_address || 'Address not available',
                   phone: place.formatted_phone_number,
                   rating: place.rating,
-                  position: {
-                    lat: place.geometry.location.lat(),
-                    lng: place.geometry.location.lng()
+                  location: {
+                    latitude: place.geometry.location.lat(),
+                    longitude: place.geometry.location.lng()
                   },
                   resources: generateRandomResources(),
                   placeId: place.place_id,
@@ -193,8 +202,8 @@ export const MapView: React.FC<MapViewProps> = ({
               newHospitals.forEach(hospital => {
                 const exists = allHospitals.some(existing => 
                   existing.placeId === hospital.placeId || 
-                  (Math.abs(existing.position.lat - hospital.position.lat) < 0.001 &&
-                   Math.abs(existing.position.lng - hospital.position.lng) < 0.001)
+                  (Math.abs(existing.location.latitude - hospital.location.latitude) < 0.001 &&
+                   Math.abs(existing.location.longitude - hospital.location.longitude) < 0.001)
                 );
                 if (!exists) {
                   allHospitals.push(hospital);
@@ -249,7 +258,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: '40, Sassoon Road, Pune, Maharashtra 411001',
       phone: '+91-40-6645-6645',
       rating: 4.2,
-      position: { lat: 18.5314, lng: 73.8750 },
+      location: { latitude: 18.5314, longitude: 73.8750 },
       resources: generateRandomResources()
     },
     {
@@ -258,7 +267,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: '32, Sassoon Road, Pune, Maharashtra 411001',
       phone: '+91-40-6633-3333',
       rating: 4.3,
-      position: { lat: 18.5366, lng: 73.8897 },
+      location: { latitude: 18.5366, longitude: 73.8897 },
       resources: generateRandomResources()
     },
     {
@@ -267,7 +276,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: 'Rasta Peth, Pune, Maharashtra 411011',
       phone: '+91-40-2612-6767',
       rating: 3.9,
-      position: { lat: 18.5089, lng: 73.8553 },
+      location: { latitude: 18.5089, longitude: 73.8553 },
       resources: generateRandomResources()
     },
     {
@@ -276,7 +285,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: 'Kharadi, Pune, Maharashtra 411014',
       phone: '+91-40-6740-7000',
       rating: 4.2,
-      position: { lat: 18.5515, lng: 73.9370 },
+      location: { latitude: 18.5515, longitude: 73.9370 },
       resources: generateRandomResources()
     },
     {
@@ -285,7 +294,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: 'Chinchwad, Pune, Maharashtra 411033',
       phone: '+91-40-7115-5555',
       rating: 4.0,
-      position: { lat: 18.6298, lng: 73.8131 },
+      location: { latitude: 18.6298, longitude: 73.8131 },
       resources: generateRandomResources()
     },
     {
@@ -294,7 +303,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: 'Nagar Road, Pune, Maharashtra 411014',
       phone: '+91-40-6730-3000',
       rating: 4.1,
-      position: { lat: 18.5679, lng: 73.9106 },
+      location: { latitude: 18.5679, longitude: 73.9106 },
       resources: generateRandomResources()
     },
     {
@@ -303,7 +312,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: 'Sadashiv Peth, Pune, Maharashtra 411030',
       phone: '+91-40-2422-5151',
       rating: 3.8,
-      position: { lat: 18.5074, lng: 73.8477 },
+      location: { latitude: 18.5074, longitude: 73.8477 },
       resources: generateRandomResources()
     },
     {
@@ -312,7 +321,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: 'Thube Park, Shivajinagar, Pune, Maharashtra 411005',
       phone: '+91-40-2553-3333',
       rating: 4.0,
-      position: { lat: 18.5304, lng: 73.8567 },
+      location: { latitude: 18.5304, longitude: 73.8567 },
       resources: generateRandomResources()
     },
     {
@@ -321,7 +330,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: 'Magarpatta Road, Hadapsar, Pune, Maharashtra 411013',
       phone: '+91-40-6715-9999',
       rating: 4.1,
-      position: { lat: 18.5089, lng: 73.9260 },
+      location: { latitude: 18.5089, longitude: 73.9260 },
       resources: generateRandomResources()
     },
     {
@@ -330,7 +339,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: 'Katraj, Pune, Maharashtra 411046',
       phone: '+91-40-2411-1000',
       rating: 3.9,
-      position: { lat: 18.4583, lng: 73.8648 },
+      location: { latitude: 18.4583, longitude: 73.8648 },
       resources: generateRandomResources()
     },
     {
@@ -339,7 +348,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: 'Baner Road, Pune, Maharashtra 411045',
       phone: '+91-40-6712-7000',
       rating: 4.3,
-      position: { lat: 18.5590, lng: 73.7850 },
+      location: { latitude: 18.5590, longitude: 73.7850 },
       resources: generateRandomResources()
     },
     {
@@ -348,7 +357,7 @@ export const MapView: React.FC<MapViewProps> = ({
       address: 'Baner Road, Pune, Maharashtra 411045',
       phone: '+91-40-6712-4444',
       rating: 4.2,
-      position: { lat: 18.5640, lng: 73.7840 },
+      location: { latitude: 18.5640, longitude: 73.7840 },
       resources: generateRandomResources()
     }
   ];
@@ -366,7 +375,7 @@ export const MapView: React.FC<MapViewProps> = ({
         : '#6b7280';
 
       const marker = new window.google.maps.Marker({
-        position: hospital.position,
+        position: { lat: hospital.location.latitude, lng: hospital.location.longitude },
         map: mapInstance,
         title: hospital.name,
         icon: {
@@ -445,16 +454,19 @@ export const MapView: React.FC<MapViewProps> = ({
 
   // Focus on selected hospital
   useEffect(() => {
-    if (selectedHospital && map) {
-      map.setCenter(selectedHospital.position);
+    if (selectedHospital && selectedHospital.location && map && markers.length > 0) {
+      const hospitalPosition = { lat: selectedHospital.location.latitude, lng: selectedHospital.location.longitude };
+      map.setCenter(hospitalPosition);
       map.setZoom(15);
       
-      const marker = markers.find(m => 
-        Math.abs(m.getPosition().lat() - selectedHospital.position.lat) < 0.001 &&
-        Math.abs(m.getPosition().lng() - selectedHospital.position.lng) < 0.001
-      );
+      const marker = markers.find(m => {
+        const markerPos = m.getPosition();
+        return markerPos && 
+               Math.abs(markerPos.lat() - selectedHospital.location.latitude) < 0.001 &&
+               Math.abs(markerPos.lng() - selectedHospital.location.longitude) < 0.001;
+      });
       
-      if (marker) {
+      if (marker && window.google && window.google.maps && window.google.maps.event) {
         window.google.maps.event.trigger(marker, 'click');
       }
     }
@@ -520,7 +532,7 @@ export const MapView: React.FC<MapViewProps> = ({
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 bg-red-500 rounded-full mr-2" />
-            <span className="text-gray-600">Low (&lt;5 ICU)</span>
+            <span className="text-gray-600">Low (<5 ICU)</span>
           </div>
         </div>
         <span className="text-gray-500">Click markers for details</span>
