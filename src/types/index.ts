@@ -1,3 +1,7 @@
+// Re-export all types from hospital.ts for backward compatibility
+export * from './hospital';
+
+// Legacy types for existing components
 export interface Hospital {
   id: string;
   name: string;

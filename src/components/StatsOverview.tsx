@@ -1,22 +1,26 @@
 import React from 'react';
 import { Bed, Activity, Truck, AlertCircle } from 'lucide-react';
-import { Hospital } from '../types';
+import { HospitalProfile, BedAvailability } from '../types/hospital';
 
 interface StatsOverviewProps {
-  hospitals: Hospital[];
+  hospitals: HospitalProfile[];
+  availability: { [key: string]: BedAvailability };
 }
 
-export const StatsOverview: React.FC<StatsOverviewProps> = ({ hospitals }) => {
+export const StatsOverview: React.FC<StatsOverviewProps> = ({ hospitals, availability }) => {
   const stats = hospitals.reduce(
     (acc, hospital) => {
-      acc.totalICU += hospital.resources.icuBeds.total;
-      acc.availableICU += hospital.resources.icuBeds.available;
-      acc.totalGeneral += hospital.resources.generalBeds.total;
-      acc.availableGeneral += hospital.resources.generalBeds.available;
-      acc.totalOxygen += hospital.resources.oxygenBeds.total;
-      acc.availableOxygen += hospital.resources.oxygenBeds.available;
-      acc.totalAmbulances += hospital.resources.ambulances.total;
-      acc.availableAmbulances += hospital.resources.ambulances.available;
+      const hospitalAvailability = availability[hospital.id];
+      if (hospitalAvailability) {
+        acc.totalICU += hospitalAvailability.icuBeds.total;
+        acc.availableICU += hospitalAvailability.icuBeds.available;
+        acc.totalGeneral += hospitalAvailability.generalBeds.total;
+        acc.availableGeneral += hospitalAvailability.generalBeds.available;
+        acc.totalOxygen += hospitalAvailability.oxygenBeds.total;
+        acc.availableOxygen += hospitalAvailability.oxygenBeds.available;
+        acc.totalAmbulances += hospitalAvailability.ambulances.total;
+        acc.availableAmbulances += hospitalAvailability.ambulances.available;
+      }
       return acc;
     },
     {
@@ -73,8 +77,8 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ hospitals }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {statsCards.map((stat, index) => {
-        const percentage = ((stat.available / stat.total) * 100).toFixed(1);
-        const isLow = (stat.available / stat.total) < 0.1;
+        const percentage = stat.total > 0 ? ((stat.available / stat.total) * 100).toFixed(1) : '0';
+        const isLow = stat.total > 0 && (stat.available / stat.total) < 0.1;
         
         return (
           <div

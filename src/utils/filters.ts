@@ -1,6 +1,10 @@
-import { Hospital, SearchFilters } from '../types';
+import { HospitalProfile, BedAvailability, SearchFilters } from '../types';
 
-export const filterHospitals = (hospitals: Hospital[], filters: SearchFilters): Hospital[] => {
+export const filterHospitals = (
+  hospitals: HospitalProfile[], 
+  filters: SearchFilters,
+  availability: { [key: string]: BedAvailability }
+): HospitalProfile[] => {
   return hospitals.filter((hospital) => {
     // City filter
     if (filters.city && !hospital.city.toLowerCase().includes(filters.city.toLowerCase())) {
@@ -12,20 +16,22 @@ export const filterHospitals = (hospitals: Hospital[], filters: SearchFilters): 
       return false;
     }
 
+    const hospitalAvailability = availability[hospital.id];
+
     // Resource type filter
-    if (filters.resourceType !== 'all') {
+    if (filters.resourceType !== 'all' && hospitalAvailability) {
       const hasAvailableResource = () => {
         switch (filters.resourceType) {
           case 'icu':
-            return hospital.resources.icuBeds.available > 0;
+            return hospitalAvailability.icuBeds.available > 0;
           case 'general':
-            return hospital.resources.generalBeds.available > 0;
+            return hospitalAvailability.generalBeds.available > 0;
           case 'oxygen':
-            return hospital.resources.oxygenBeds.available > 0;
+            return hospitalAvailability.oxygenBeds.available > 0;
           case 'ventilator':
-            return hospital.resources.ventilators.available > 0;
+            return hospitalAvailability.ventilators.available > 0;
           case 'ambulance':
-            return hospital.resources.ambulances.available > 0;
+            return hospitalAvailability.ambulances.available > 0;
           default:
             return true;
         }
@@ -37,13 +43,13 @@ export const filterHospitals = (hospitals: Hospital[], filters: SearchFilters): 
     }
 
     // Availability filter
-    if (filters.availabilityOnly) {
+    if (filters.availabilityOnly && hospitalAvailability) {
       const hasAnyAvailability = 
-        hospital.resources.icuBeds.available > 0 ||
-        hospital.resources.generalBeds.available > 0 ||
-        hospital.resources.oxygenBeds.available > 0 ||
-        hospital.resources.ventilators.available > 0 ||
-        hospital.resources.ambulances.available > 0;
+        hospitalAvailability.icuBeds.available > 0 ||
+        hospitalAvailability.generalBeds.available > 0 ||
+        hospitalAvailability.oxygenBeds.available > 0 ||
+        hospitalAvailability.ventilators.available > 0 ||
+        hospitalAvailability.ambulances.available > 0;
 
       if (!hasAnyAvailability) {
         return false;

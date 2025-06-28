@@ -1,14 +1,16 @@
 import React from 'react';
 import { Phone, MapPin, Clock, CheckCircle, AlertCircle, Bed, Stethoscope, Truck } from 'lucide-react';
-import { Hospital } from '../types';
+import { HospitalProfile, BedAvailability } from '../types/hospital';
 
 interface HospitalCardProps {
-  hospital: Hospital;
+  hospital: HospitalProfile;
+  availability?: BedAvailability;
   distance?: number;
 }
 
-export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, distance }) => {
+export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, availability, distance }) => {
   const getAvailabilityColor = (available: number, total: number) => {
+    if (total === 0) return 'text-gray-600';
     const percentage = (available / total) * 100;
     if (percentage > 20) return 'text-green-600';
     if (percentage > 10) return 'text-yellow-600';
@@ -16,6 +18,7 @@ export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, distance }
   };
 
   const getAvailabilityBg = (available: number, total: number) => {
+    if (total === 0) return 'bg-gray-100';
     const percentage = (available / total) * 100;
     if (percentage > 20) return 'bg-green-100';
     if (percentage > 10) return 'bg-yellow-100';
@@ -53,69 +56,78 @@ export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, distance }
           )}
         </div>
         <div className="text-right">
-          <div className="flex items-center text-gray-500 text-xs mb-1">
-            <Clock className="h-3 w-3 mr-1" />
-            <span>Updated {formatLastUpdated(hospital.lastUpdated)}</span>
-          </div>
+          {availability && (
+            <div className="flex items-center text-gray-500 text-xs mb-1">
+              <Clock className="h-3 w-3 mr-1" />
+              <span>Updated {formatLastUpdated(availability.lastUpdated)}</span>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-        <div className={`p-3 rounded-lg ${getAvailabilityBg(hospital.resources.icuBeds.available, hospital.resources.icuBeds.total)}`}>
-          <div className="flex items-center justify-between">
-            <Bed className="h-5 w-5 text-gray-600" />
-            <span className={`font-bold ${getAvailabilityColor(hospital.resources.icuBeds.available, hospital.resources.icuBeds.total)}`}>
-              {hospital.resources.icuBeds.available}
-            </span>
+      {availability ? (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+          <div className={`p-3 rounded-lg ${getAvailabilityBg(availability.icuBeds.available, availability.icuBeds.total)}`}>
+            <div className="flex items-center justify-between">
+              <Bed className="h-5 w-5 text-gray-600" />
+              <span className={`font-bold ${getAvailabilityColor(availability.icuBeds.available, availability.icuBeds.total)}`}>
+                {availability.icuBeds.available}
+              </span>
+            </div>
+            <div className="text-xs text-gray-600 mt-1">ICU Beds</div>
+            <div className="text-xs text-gray-500">of {availability.icuBeds.total}</div>
           </div>
-          <div className="text-xs text-gray-600 mt-1">ICU Beds</div>
-          <div className="text-xs text-gray-500">of {hospital.resources.icuBeds.total}</div>
-        </div>
 
-        <div className={`p-3 rounded-lg ${getAvailabilityBg(hospital.resources.generalBeds.available, hospital.resources.generalBeds.total)}`}>
-          <div className="flex items-center justify-between">
-            <Bed className="h-5 w-5 text-gray-600" />
-            <span className={`font-bold ${getAvailabilityColor(hospital.resources.generalBeds.available, hospital.resources.generalBeds.total)}`}>
-              {hospital.resources.generalBeds.available}
-            </span>
+          <div className={`p-3 rounded-lg ${getAvailabilityBg(availability.generalBeds.available, availability.generalBeds.total)}`}>
+            <div className="flex items-center justify-between">
+              <Bed className="h-5 w-5 text-gray-600" />
+              <span className={`font-bold ${getAvailabilityColor(availability.generalBeds.available, availability.generalBeds.total)}`}>
+                {availability.generalBeds.available}
+              </span>
+            </div>
+            <div className="text-xs text-gray-600 mt-1">General Beds</div>
+            <div className="text-xs text-gray-500">of {availability.generalBeds.total}</div>
           </div>
-          <div className="text-xs text-gray-600 mt-1">General Beds</div>
-          <div className="text-xs text-gray-500">of {hospital.resources.generalBeds.total}</div>
-        </div>
 
-        <div className={`p-3 rounded-lg ${getAvailabilityBg(hospital.resources.oxygenBeds.available, hospital.resources.oxygenBeds.total)}`}>
-          <div className="flex items-center justify-between">
-            <Stethoscope className="h-5 w-5 text-gray-600" />
-            <span className={`font-bold ${getAvailabilityColor(hospital.resources.oxygenBeds.available, hospital.resources.oxygenBeds.total)}`}>
-              {hospital.resources.oxygenBeds.available}
-            </span>
+          <div className={`p-3 rounded-lg ${getAvailabilityBg(availability.oxygenBeds.available, availability.oxygenBeds.total)}`}>
+            <div className="flex items-center justify-between">
+              <Stethoscope className="h-5 w-5 text-gray-600" />
+              <span className={`font-bold ${getAvailabilityColor(availability.oxygenBeds.available, availability.oxygenBeds.total)}`}>
+                {availability.oxygenBeds.available}
+              </span>
+            </div>
+            <div className="text-xs text-gray-600 mt-1">Oxygen Beds</div>
+            <div className="text-xs text-gray-500">of {availability.oxygenBeds.total}</div>
           </div>
-          <div className="text-xs text-gray-600 mt-1">Oxygen Beds</div>
-          <div className="text-xs text-gray-500">of {hospital.resources.oxygenBeds.total}</div>
-        </div>
 
-        <div className={`p-3 rounded-lg ${getAvailabilityBg(hospital.resources.ventilators.available, hospital.resources.ventilators.total)}`}>
-          <div className="flex items-center justify-between">
-            <AlertCircle className="h-5 w-5 text-gray-600" />
-            <span className={`font-bold ${getAvailabilityColor(hospital.resources.ventilators.available, hospital.resources.ventilators.total)}`}>
-              {hospital.resources.ventilators.available}
-            </span>
+          <div className={`p-3 rounded-lg ${getAvailabilityBg(availability.ventilators.available, availability.ventilators.total)}`}>
+            <div className="flex items-center justify-between">
+              <AlertCircle className="h-5 w-5 text-gray-600" />
+              <span className={`font-bold ${getAvailabilityColor(availability.ventilators.available, availability.ventilators.total)}`}>
+                {availability.ventilators.available}
+              </span>
+            </div>
+            <div className="text-xs text-gray-600 mt-1">Ventilators</div>
+            <div className="text-xs text-gray-500">of {availability.ventilators.total}</div>
           </div>
-          <div className="text-xs text-gray-600 mt-1">Ventilators</div>
-          <div className="text-xs text-gray-500">of {hospital.resources.ventilators.total}</div>
-        </div>
 
-        <div className={`p-3 rounded-lg ${getAvailabilityBg(hospital.resources.ambulances.available, hospital.resources.ambulances.total)}`}>
-          <div className="flex items-center justify-between">
-            <Truck className="h-5 w-5 text-gray-600" />
-            <span className={`font-bold ${getAvailabilityColor(hospital.resources.ambulances.available, hospital.resources.ambulances.total)}`}>
-              {hospital.resources.ambulances.available}
-            </span>
+          <div className={`p-3 rounded-lg ${getAvailabilityBg(availability.ambulances.available, availability.ambulances.total)}`}>
+            <div className="flex items-center justify-between">
+              <Truck className="h-5 w-5 text-gray-600" />
+              <span className={`font-bold ${getAvailabilityColor(availability.ambulances.available, availability.ambulances.total)}`}>
+                {availability.ambulances.available}
+              </span>
+            </div>
+            <div className="text-xs text-gray-600 mt-1">Ambulances</div>
+            <div className="text-xs text-gray-500">of {availability.ambulances.total}</div>
           </div>
-          <div className="text-xs text-gray-600 mt-1">Ambulances</div>
-          <div className="text-xs text-gray-500">of {hospital.resources.ambulances.total}</div>
         </div>
-      </div>
+      ) : (
+        <div className="mb-4 p-4 bg-gray-50 rounded-lg text-center">
+          <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+          <p className="text-gray-600 text-sm">Availability data not available</p>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3">
         <a
