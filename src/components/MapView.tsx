@@ -532,7 +532,7 @@ export const MapView: React.FC<MapViewProps> = ({
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 bg-red-500 rounded-full mr-2" />
-            <span className="text-gray-600">Low (<5 ICU)</span>
+            <span className="text-gray-600">Low (&lt;5 ICU)</span>
           </div>
         </div>
         <span className="text-gray-500">Click markers for details</span>
