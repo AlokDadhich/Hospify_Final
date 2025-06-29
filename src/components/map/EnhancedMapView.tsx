@@ -51,14 +51,14 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
   useEffect(() => {
     if (map && hospitals.length > 0) {
       updateMarkers();
+      // Adjust map bounds to show all hospitals
+      adjustMapBounds();
     }
   }, [map, hospitals, availability, filterType]);
 
   useEffect(() => {
     if (userLocation && map) {
       addUserLocationMarker();
-      // Center map on user location
-      map.setCenter({ lat: userLocation.latitude, lng: userLocation.longitude });
     }
   }, [userLocation, map]);
 
@@ -123,7 +123,7 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
     try {
       const mapInstance = new window.google.maps.Map(mapRef.current, {
         center: userLocation ? { lat: userLocation.latitude, lng: userLocation.longitude } : DEFAULT_CENTER,
-        zoom: userLocation ? 13 : 11,
+        zoom: userLocation ? 12 : 11,
         styles: [
           {
             featureType: 'poi.medical',
@@ -146,6 +146,34 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
     }
   };
 
+  const adjustMapBounds = () => {
+    if (!map || hospitals.length === 0) return;
+
+    const bounds = new window.google.maps.LatLngBounds();
+    
+    // Add user location to bounds if available
+    if (userLocation) {
+      bounds.extend(new window.google.maps.LatLng(userLocation.latitude, userLocation.longitude));
+    }
+    
+    // Add hospital locations to bounds
+    const hospitalsToShow = getFilteredHospitals().slice(0, maxResults);
+    hospitalsToShow.forEach(hospital => {
+      bounds.extend(new window.google.maps.LatLng(hospital.location.latitude, hospital.location.longitude));
+    });
+
+    // Fit map to bounds with padding
+    map.fitBounds(bounds, { padding: 50 });
+    
+    // Ensure minimum zoom level
+    const listener = window.google.maps.event.addListener(map, 'bounds_changed', () => {
+      if (map.getZoom() > 15) {
+        map.setZoom(15);
+      }
+      window.google.maps.event.removeListener(listener);
+    });
+  };
+
   const updateMarkers = () => {
     // Clear existing markers
     markers.forEach(marker => marker.setMap(null));
@@ -156,7 +184,9 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
     // Limit to maxResults (40) hospitals
     const hospitalsToShow = filteredHospitals.slice(0, maxResults);
 
-    hospitalsToShow.forEach((hospital) => {
+    console.log(`Showing ${hospitalsToShow.length} hospitals on map`);
+
+    hospitalsToShow.forEach((hospital, index) => {
       const hospitalAvailability = availability[hospital.id];
       const availabilityColor = getAvailabilityColor(hospital, hospitalAvailability);
 
@@ -171,7 +201,9 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
           fillOpacity: 1,
           strokeColor: '#ffffff',
           strokeWeight: 3
-        }
+        },
+        animation: window.google.maps.Animation.DROP,
+        optimized: false
       });
 
       const infoWindow = new window.google.maps.InfoWindow({
@@ -247,12 +279,25 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
       title: 'Your Location',
       icon: {
         path: window.google.maps.SymbolPath.CIRCLE,
-        scale: 10,
+        scale: 15,
         fillColor: '#3b82f6',
         fillOpacity: 1,
         strokeColor: '#ffffff',
-        strokeWeight: 3
-      }
+        strokeWeight: 4
+      },
+      zIndex: 1000
+    });
+
+    // Add a circle to show search radius
+    const circle = new window.google.maps.Circle({
+      strokeColor: '#3b82f6',
+      strokeOpacity: 0.3,
+      strokeWeight: 2,
+      fillColor: '#3b82f6',
+      fillOpacity: 0.1,
+      map: map,
+      center: { lat: userLocation.latitude, lng: userLocation.longitude },
+      radius: maxDistance * 1000 // Convert km to meters
     });
 
     setUserMarker(marker);
@@ -357,7 +402,7 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
               <p className="text-gray-600 font-medium">Loading hospital map...</p>
-              <p className="text-gray-500 text-sm mt-2">Preparing to show nearest 40 hospitals</p>
+              <p className="text-gray-500 text-sm mt-2">Preparing to show nearest {maxResults} hospitals</p>
             </div>
           </div>
         )}
@@ -384,8 +429,68 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
           </div>
         </div>
         <span className="text-gray-500">
-          Showing {Math.min(getFilteredHospitals().length, maxResults)} hospitals • Real-time data
+          Showing {Math.min(getFilteredHospitals().length, maxResults)} of {hospitals.length} hospitals
         </span>
+      </div>
+
+      {/* Hospital List Below Map */}
+      <div className="mt-6">
+        <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+          Hospitals on Map
+          <span className="ml-2 text-sm font-normal text-gray-500">
+            ({Math.min(getFilteredHospitals().length, maxResults)} shown)
+          </span>
+        </h4>
+        <div className="space-y-2 max-h-60 overflow-y-auto">
+          {getFilteredHospitals().slice(0, maxResults).map((hospital, index) => {
+            const hospitalAvailability = availability[hospital.id];
+            const distance = userLocation ? 
+              calculateDistance(userLocation.latitude, userLocation.longitude, hospital.location.latitude, hospital.location.longitude) : 
+              null;
+            
+            return (
+              <div 
+                key={hospital.id}
+                className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md ${
+                  selectedHospital?.id === hospital.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                }`}
+                onClick={() => onHospitalSelect && onHospitalSelect(hospital)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h5 className="font-medium text-gray-900">{hospital.name}</h5>
+                    <p className="text-sm text-gray-600 mt-1">{hospital.city}, {hospital.state}</p>
+                    <div className="flex items-center mt-2 space-x-4">
+                      {distance && (
+                        <div className="flex items-center text-sm text-blue-600">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {distance.toFixed(1)} km
+                        </div>
+                      )}
+                      {hospital.isVerified && (
+                        <div className="flex items-center text-sm text-green-600">
+                          <span>✓ Verified</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {hospitalAvailability && (
+                    <div className="ml-4 text-right">
+                      <div className={`w-4 h-4 rounded-full ${
+                        getAvailabilityColor(hospital, hospitalAvailability) === '#10b981' ? 'bg-green-500' :
+                        getAvailabilityColor(hospital, hospitalAvailability) === '#f59e0b' ? 'bg-yellow-500' : 
+                        getAvailabilityColor(hospital, hospitalAvailability) === '#ef4444' ? 'bg-red-500' : 'bg-gray-500'
+                      }`} />
+                      <p className="text-xs text-gray-500 mt-1">
+                        ICU: {hospitalAvailability.icuBeds.available}/{hospitalAvailability.icuBeds.total}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
