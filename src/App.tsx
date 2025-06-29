@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { User } from 'firebase/auth';
+import { User } from '@supabase/supabase-js';
 import { AuthService } from './services/authService';
 import { HospitalService } from './services/hospitalService';
 
@@ -37,6 +37,7 @@ function App() {
   const [showAuth, setShowAuth] = useState(false);
 
   // Hospital data state
+  const [allHospitals, setAllHospitals] = useState<HospitalProfile[]>([]);
   const [hospitals, setHospitals] = useState<HospitalProfile[]>([]);
   const [availability, setAvailability] = useState<{ [key: string]: BedAvailability }>({});
   const [filteredHospitals, setFilteredHospitals] = useState<HospitalProfile[]>([]);
@@ -47,7 +48,7 @@ function App() {
     pincode: '',
     resourceType: 'all',
     availabilityOnly: false,
-    radius: 25
+    radius: 50 // Default to 50km
   });
   const [userLocation, setUserLocation] = useState<UserLocation | undefined>();
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
@@ -72,38 +73,74 @@ function App() {
     loadHospitalData();
   }, []);
 
+  // Apply location-based filtering when user location or filters change
+  useEffect(() => {
+    if (userLocation && allHospitals.length > 0) {
+      // Find hospitals within radius
+      const nearbyHospitals = findNearestHospitals(allHospitals, userLocation, filters.radius);
+      const limitedHospitals = nearbyHospitals.slice(0, 40); // Limit to 40 hospitals
+      
+      console.log(`Found ${nearbyHospitals.length} hospitals within ${filters.radius}km, showing ${limitedHospitals.length}`);
+      
+      setHospitals(limitedHospitals);
+    } else {
+      // Without location, show all hospitals but limit to 40
+      const limitedHospitals = allHospitals.slice(0, 40);
+      setHospitals(limitedHospitals);
+    }
+  }, [userLocation, allHospitals, filters.radius]);
+
   // Filter hospitals when data or filters change
   useEffect(() => {
-    let filtered = filterHospitals(hospitals, filters, availability);
+    const filtered = filterHospitals(hospitals, filters, availability);
+    setFilteredHospitals(filtered);
     
-    // If user location is available, find nearest 40 hospitals
+    // Update hospitals with distance for display
     if (userLocation) {
-      const withDistance = findNearestHospitals(filtered, userLocation, filters.radius);
-      const nearest40 = withDistance.slice(0, 40); // Limit to 40 hospitals
-      setFilteredHospitals(nearest40);
-      setHospitalsWithDistance(nearest40);
+      const withDistance = filtered.map(hospital => {
+        const distance = calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          hospital.location.latitude,
+          hospital.location.longitude
+        );
+        return { ...hospital, distance };
+      }).sort((a, b) => a.distance - b.distance);
+      
+      setHospitalsWithDistance(withDistance);
     } else {
-      // Without location, still limit to 40 hospitals
-      const limited = filtered.slice(0, 40);
-      setFilteredHospitals(limited);
-      setHospitalsWithDistance(limited.map(h => ({ ...h, distance: 0 })));
+      setHospitalsWithDistance(filtered.map(h => ({ ...h, distance: 0 })));
     }
   }, [hospitals, availability, filters, userLocation]);
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
   const loadHospitalData = async () => {
     try {
       setDataLoading(true);
       
-      // Try to load from Firebase first
+      // Try to load from Supabase first
       const hospitalData = await HospitalService.getAllHospitals();
       
       if (hospitalData.length === 0) {
-        // If no data in Firebase, generate sample data with 40+ hospitals
+        // If no data in Supabase, generate sample data
         console.log('No hospital data found, generating sample data...');
-        const sampleHospitals = generateSampleHospitals(50); // Generate 50 hospitals
+        const sampleHospitals = generateSampleHospitals(100); // Generate more hospitals for better coverage
         const sampleAvailability = generateSampleAvailability(sampleHospitals);
         
-        setHospitals(sampleHospitals);
+        setAllHospitals(sampleHospitals);
         
         // Convert availability array to object
         const availabilityMap: { [key: string]: BedAvailability } = {};
@@ -112,7 +149,7 @@ function App() {
         });
         setAvailability(availabilityMap);
       } else {
-        setHospitals(hospitalData);
+        setAllHospitals(hospitalData);
         
         // Subscribe to real-time availability updates
         const unsubscribe = HospitalService.subscribeToAllBedAvailability((availabilityData) => {
@@ -126,10 +163,10 @@ function App() {
     } catch (error) {
       console.error('Error loading hospital data:', error);
       // Fallback to sample data
-      const sampleHospitals = generateSampleHospitals(50);
+      const sampleHospitals = generateSampleHospitals(100);
       const sampleAvailability = generateSampleAvailability(sampleHospitals);
       
-      setHospitals(sampleHospitals);
+      setAllHospitals(sampleHospitals);
       
       const availabilityMap: { [key: string]: BedAvailability } = {};
       sampleAvailability.forEach(item => {
@@ -147,14 +184,9 @@ function App() {
       const location = await getCurrentLocation();
       setUserLocation(location);
       
-      const nearest = findNearestHospitals(hospitals, location, filters.radius);
-      const nearest40 = nearest.slice(0, 40); // Ensure we get exactly 40 hospitals
-      
-      setFilteredHospitals(nearest40);
-      setHospitalsWithDistance(nearest40);
-      
-      if (nearest40.length > 0) {
-        setSelectedHospital(nearest40[0]);
+      // The useEffect will handle filtering hospitals by location
+      if (filteredHospitals.length > 0) {
+        setSelectedHospital(filteredHospitals[0]);
         setActiveView('map');
       }
     } catch (error) {
@@ -216,7 +248,7 @@ function App() {
               </div>
               
               <div className="flex items-center space-x-4">
-                <span className="text-gray-700">Welcome, {user.displayName || user.email}</span>
+                <span className="text-gray-700">Welcome, {user.user_metadata?.display_name || user.email}</span>
                 <button
                   onClick={() => window.location.href = '/'}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors duration-200"
@@ -343,8 +375,9 @@ function App() {
               ))}
             </div>
             <div className="text-sm text-gray-500">
-              Showing {filteredHospitals.length} of {hospitals.length} hospitals
-              {userLocation && ' (nearest 40)'}
+              Showing {filteredHospitals.length} hospitals
+              {userLocation && ` within ${filters.radius}km`}
+              {userLocation && filteredHospitals.length > 0 && ` (nearest: ${hospitalsWithDistance[0]?.distance?.toFixed(1)}km)`}
             </div>
           </div>
         </div>
@@ -391,9 +424,17 @@ function App() {
                     <div className="space-y-3">
                       {filteredHospitals.slice(0, 5).map((hospital) => {
                         const hospitalAvailability = availability[hospital.id];
+                        const distance = userLocation ? 
+                          hospitalsWithDistance.find(h => h.id === hospital.id)?.distance : null;
+                        
                         return (
                           <div key={hospital.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                            <span className="font-medium text-gray-900 truncate">{hospital.name}</span>
+                            <div className="flex-1">
+                              <span className="font-medium text-gray-900 truncate block">{hospital.name}</span>
+                              {distance && (
+                                <span className="text-xs text-blue-600">{distance.toFixed(1)}km away</span>
+                              )}
+                            </div>
                             <div className="flex space-x-2">
                               <span className="text-sm text-gray-600">
                                 ICU: {hospitalAvailability?.icuBeds.available || 0}
@@ -442,8 +483,19 @@ function App() {
                 <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No hospitals found</h3>
                 <p className="text-gray-600">
-                  Try adjusting your search filters or increasing the search radius.
+                  {userLocation 
+                    ? `No hospitals found within ${filters.radius}km of your location. Try increasing the search radius.`
+                    : 'Try adjusting your search filters or enabling location services to find nearby hospitals.'
+                  }
                 </p>
+                {userLocation && (
+                  <button
+                    onClick={() => setFilters(prev => ({ ...prev, radius: Math.min(prev.radius + 25, 100) }))}
+                    className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Increase radius to {Math.min(filters.radius + 25, 100)}km
+                  </button>
+                )}
               </div>
             )}
           </>

@@ -1,34 +1,23 @@
 import { HospitalProfile, BedAvailability } from '../types/hospital';
 
-// Indian cities with coordinates for realistic distribution
+// Focus on user's likely location (India) with realistic distribution
 const INDIAN_CITIES = [
-  { name: 'Mumbai', state: 'Maharashtra', lat: 19.0760, lng: 72.8777, pincode: '400001' },
-  { name: 'Delhi', state: 'Delhi', lat: 28.7041, lng: 77.1025, pincode: '110001' },
-  { name: 'Bangalore', state: 'Karnataka', lat: 12.9716, lng: 77.5946, pincode: '560001' },
-  { name: 'Hyderabad', state: 'Telangana', lat: 17.3850, lng: 78.4867, pincode: '500001' },
-  { name: 'Chennai', state: 'Tamil Nadu', lat: 13.0827, lng: 80.2707, pincode: '600001' },
-  { name: 'Kolkata', state: 'West Bengal', lat: 22.5726, lng: 88.3639, pincode: '700001' },
-  { name: 'Pune', state: 'Maharashtra', lat: 18.5204, lng: 73.8567, pincode: '411001' },
-  { name: 'Ahmedabad', state: 'Gujarat', lat: 23.0225, lng: 72.5714, pincode: '380001' },
-  { name: 'Jaipur', state: 'Rajasthan', lat: 26.9124, lng: 75.7873, pincode: '302001' },
-  { name: 'Surat', state: 'Gujarat', lat: 21.1702, lng: 72.8311, pincode: '395001' }
-];
-
-const HOSPITAL_TYPES = [
-  'General Hospital',
-  'Medical Center',
-  'Specialty Hospital',
-  'Multi-Specialty Hospital',
-  'Teaching Hospital',
-  'Community Hospital',
-  'Emergency Hospital',
-  'Trauma Center',
-  'Children\'s Hospital',
-  'Cancer Center'
+  // Major metros with higher hospital density
+  { name: 'Mumbai', state: 'Maharashtra', lat: 19.0760, lng: 72.8777, pincode: '400001', weight: 15 },
+  { name: 'Delhi', state: 'Delhi', lat: 28.7041, lng: 77.1025, pincode: '110001', weight: 15 },
+  { name: 'Bangalore', state: 'Karnataka', lat: 12.9716, lng: 77.5946, pincode: '560001', weight: 12 },
+  { name: 'Pune', state: 'Maharashtra', lat: 18.5204, lng: 73.8567, pincode: '411001', weight: 10 },
+  { name: 'Hyderabad', state: 'Telangana', lat: 17.3850, lng: 78.4867, pincode: '500001', weight: 10 },
+  { name: 'Chennai', state: 'Tamil Nadu', lat: 13.0827, lng: 80.2707, pincode: '600001', weight: 10 },
+  { name: 'Kolkata', state: 'West Bengal', lat: 22.5726, lng: 88.3639, pincode: '700001', weight: 8 },
+  { name: 'Ahmedabad', state: 'Gujarat', lat: 23.0225, lng: 72.5714, pincode: '380001', weight: 6 },
+  { name: 'Jaipur', state: 'Rajasthan', lat: 26.9124, lng: 75.7873, pincode: '302001', weight: 5 },
+  { name: 'Surat', state: 'Gujarat', lat: 21.1702, lng: 72.8311, pincode: '395001', weight: 4 },
+  { name: 'Lucknow', state: 'Uttar Pradesh', lat: 26.8467, lng: 80.9462, pincode: '226001', weight: 3 },
+  { name: 'Kanpur', state: 'Uttar Pradesh', lat: 26.4499, lng: 80.3319, pincode: '208001', weight: 2 }
 ];
 
 const HOSPITAL_NAMES = [
-  'City General Hospital',
   'Apollo Hospital',
   'Fortis Healthcare',
   'Max Healthcare',
@@ -47,11 +36,17 @@ const HOSPITAL_NAMES = [
   'Jehangir Hospital',
   'KEM Hospital',
   'Sahyadri Hospital',
-  'Noble Hospital'
+  'Noble Hospital',
+  'City Hospital',
+  'General Hospital',
+  'Medical Center',
+  'Specialty Hospital',
+  'Multi-Specialty Hospital',
+  'Community Hospital'
 ];
 
-// Generate random coordinates within a city radius
-const generateNearbyCoordinates = (centerLat: number, centerLng: number, radiusKm: number = 25) => {
+// Generate hospitals in clusters around cities for realistic distribution
+const generateNearbyCoordinates = (centerLat: number, centerLng: number, radiusKm: number = 30) => {
   const radiusInDegrees = radiusKm / 111; // Rough conversion
   const angle = Math.random() * 2 * Math.PI;
   const distance = Math.random() * radiusInDegrees;
@@ -101,24 +96,45 @@ const generateRegistrationNumber = (state: string, year: number = 2023) => {
   return `${stateCode}/${number}/${year}`;
 };
 
-export const generateSampleHospitals = (count: number = 50): HospitalProfile[] => {
+// Weighted city selection for realistic distribution
+const selectWeightedCity = () => {
+  const totalWeight = INDIAN_CITIES.reduce((sum, city) => sum + city.weight, 0);
+  let random = Math.random() * totalWeight;
+  
+  for (const city of INDIAN_CITIES) {
+    random -= city.weight;
+    if (random <= 0) {
+      return city;
+    }
+  }
+  
+  return INDIAN_CITIES[0]; // Fallback
+};
+
+export const generateSampleHospitals = (count: number = 100): HospitalProfile[] => {
   const hospitals: HospitalProfile[] = [];
   
   for (let i = 0; i < count; i++) {
-    const city = INDIAN_CITIES[Math.floor(Math.random() * INDIAN_CITIES.length)];
-    const hospitalType = HOSPITAL_TYPES[Math.floor(Math.random() * HOSPITAL_TYPES.length)];
+    const city = selectWeightedCity();
     const hospitalName = HOSPITAL_NAMES[Math.floor(Math.random() * HOSPITAL_NAMES.length)];
-    const location = generateNearbyCoordinates(city.lat, city.lng);
+    
+    // Generate location within city radius (closer to city center for more realistic distribution)
+    const maxRadius = Math.random() < 0.7 ? 15 : 30; // 70% within 15km, 30% within 30km
+    const location = generateNearbyCoordinates(city.lat, city.lng, maxRadius);
     
     // Generate unique pincode variations
     const basePincode = parseInt(city.pincode);
     const pincodeVariation = Math.floor(Math.random() * 50);
     const pincode = (basePincode + pincodeVariation).toString();
     
+    // Generate area names for more realistic addresses
+    const areas = ['Medical District', 'Health Zone', 'Hospital Road', 'Medical Campus', 'Healthcare Complex'];
+    const area = areas[Math.floor(Math.random() * areas.length)];
+    
     const hospital: HospitalProfile = {
       id: `hospital_${i + 1}`,
-      name: `${hospitalName} - ${city.name} ${i > 0 ? `Branch ${i}` : ''}`,
-      address: `${Math.floor(Math.random() * 999) + 1}, Medical District, ${city.name}, ${city.state} ${pincode}`,
+      name: `${hospitalName} - ${city.name}${i % 3 === 0 ? ` Branch ${Math.floor(i/3) + 1}` : ''}`,
+      address: `${Math.floor(Math.random() * 999) + 1}, ${area}, ${city.name}, ${city.state} ${pincode}`,
       city: city.name,
       state: city.state,
       pincode: pincode,
