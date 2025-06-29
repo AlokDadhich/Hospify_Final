@@ -140,8 +140,23 @@ export class AuthService {
   static async signOut(): Promise<void> {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    } catch (error) {
+      if (error) {
+        // Check if the error is due to no active session
+        if (error.message === 'Auth session missing!' || 
+            (error as any).code === 'session_not_found') {
+          console.warn('No active session found during sign out - this is normal');
+          return;
+        }
+        throw error;
+      }
+    } catch (error: any) {
+      // Additional check for session-related errors
+      if (error.message === 'Auth session missing!' || 
+          error.code === 'session_not_found' ||
+          error.message?.includes('Session from session_id claim in JWT does not exist')) {
+        console.warn('No active session found during sign out - this is normal');
+        return;
+      }
       console.error('Error signing out:', error);
       throw error;
     }
