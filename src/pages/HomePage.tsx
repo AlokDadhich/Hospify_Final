@@ -52,16 +52,9 @@ export const HomePage: React.FC<HomePageProps> = ({
 }) => {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Hero Section with Medical Background */}
-      <div className="mb-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white text-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <img 
-            src="https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=1200&h=400&fit=crop" 
-            alt="Hospital background" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="relative z-10 max-w-6xl mx-auto">
+      {/* Hero Section with Future Vision - Centered */}
+      <div className="mb-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white text-center">
+        <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold mb-4">
             🏥 Hospify - Real-time Hospital Resource Tracking
           </h1>
@@ -127,16 +120,9 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       )}
 
-      {/* Quick Actions Bar with Background */}
-      <div className="bg-white rounded-xl shadow-lg p-4 mb-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <img 
-            src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=1200&h=200&fit=crop" 
-            alt="Medical equipment" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="relative z-10 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      {/* Quick Actions Bar */}
+      <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
               onClick={handleNearestHospital}
@@ -262,76 +248,67 @@ export const HomePage: React.FC<HomePageProps> = ({
           )}
 
           {activeView === 'stats' && (
-            <div className="bg-white rounded-xl shadow-lg p-6 relative overflow-hidden">
-              <div className="absolute inset-0 opacity-5">
-                <img 
-                  src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop" 
-                  alt="Healthcare analytics" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="relative z-10">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">Pune Hospital Statistics</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-4">Top Hospitals by Availability</h4>
-                    <div className="space-y-3">
-                      {displayHospitals.slice(0, 5).map((hospital) => {
-                        const hospitalAvailability = availability[hospital.id];
-                        const distance = hospitals.find(h => h.id === hospital.id)?.distance;
-                        
-                        return (
-                          <div key={hospital.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                            <div className="flex-1">
-                              <span className="font-medium text-gray-900 truncate block">{hospital.name}</span>
-                              <div className="flex items-center space-x-2 text-xs text-gray-500">
-                                <span>{hospital.address.split(',')[1]?.trim()}</span>
-                                {distance && <span>• {distance.toFixed(1)}km away</span>}
-                              </div>
-                            </div>
-                            <div className="flex space-x-2">
-                              <span className="text-sm text-gray-600">
-                                ICU: {hospitalAvailability?.icuBeds.available || 0}
-                              </span>
-                              <span className="text-sm text-gray-600">
-                                General: {hospitalAvailability?.generalBeds.available || 0}
-                              </span>
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-6">Pune Hospital Statistics</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-4">Top Hospitals by Availability</h4>
+                  <div className="space-y-3">
+                    {displayHospitals.slice(0, 5).map((hospital) => {
+                      const hospitalAvailability = availability[hospital.id];
+                      const distance = hospitals.find(h => h.id === hospital.id)?.distance;
+                      
+                      return (
+                        <div key={hospital.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                          <div className="flex-1">
+                            <span className="font-medium text-gray-900 truncate block">{hospital.name}</span>
+                            <div className="flex items-center space-x-2 text-xs text-gray-500">
+                              <span>{hospital.address.split(',')[1]?.trim()}</span>
+                              {distance && <span>• {distance.toFixed(1)}km away</span>}
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
+                          <div className="flex space-x-2">
+                            <span className="text-sm text-gray-600">
+                              ICU: {hospitalAvailability?.icuBeds.available || 0}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              General: {hospitalAvailability?.generalBeds.available || 0}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-4">System Status</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                        <span className="text-gray-900">Total Hospitals</span>
-                        <span className="font-bold text-green-600">{displayHospitals.length}</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                        <span className="text-gray-900">Verified Hospitals</span>
-                        <span className="font-bold text-blue-600">
-                          {displayHospitals.filter(h => h.isVerified).length}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                        <span className="text-gray-900">Last Updated</span>
-                        <span className="font-bold text-yellow-600">Live</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                        <span className="text-gray-900">Search Area</span>
-                        <span className="font-bold text-purple-600">
-                          {locationDetected ? `${searchRadius}km radius` : 'Pune City'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
-                        <span className="text-gray-900">Showing</span>
-                        <span className="font-bold text-indigo-600">
-                          {hospitalsToShow} of {hospitals.length}
-                        </span>
-                      </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-4">System Status</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                      <span className="text-gray-900">Total Hospitals</span>
+                      <span className="font-bold text-green-600">{displayHospitals.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                      <span className="text-gray-900">Verified Hospitals</span>
+                      <span className="font-bold text-blue-600">
+                        {displayHospitals.filter(h => h.isVerified).length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                      <span className="text-gray-900">Last Updated</span>
+                      <span className="font-bold text-yellow-600">Live</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                      <span className="text-gray-900">Search Area</span>
+                      <span className="font-bold text-purple-600">
+                        {locationDetected ? `${searchRadius}km radius` : 'Pune City'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
+                      <span className="text-gray-900">Showing</span>
+                      <span className="font-bold text-indigo-600">
+                        {hospitalsToShow} of {hospitals.length}
+                      </span>
                     </div>
                   </div>
                 </div>

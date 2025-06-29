@@ -7,29 +7,25 @@ export const MissionPage: React.FC = () => {
       icon: Heart,
       title: 'Life First',
       description: 'Every decision we make is guided by our commitment to saving lives and improving health outcomes.',
-      examples: ['Emergency response optimization', 'Critical care prioritization', 'Patient-centered design'],
-      image: 'https://images.pexels.com/photos/236380/pexels-photo-236380.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
+      examples: ['Emergency response optimization', 'Critical care prioritization', 'Patient-centered design']
     },
     {
       icon: Shield,
       title: 'Trust & Transparency',
       description: 'We build trust through verified data, transparent processes, and reliable service delivery.',
-      examples: ['Data verification protocols', 'Open source components', 'Regular audits and reporting'],
-      image: 'https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
+      examples: ['Data verification protocols', 'Open source components', 'Regular audits and reporting']
     },
     {
       icon: Users,
       title: 'Community Impact',
       description: 'We believe in the power of community and work to ensure healthcare accessibility for all.',
-      examples: ['Rural hospital inclusion', 'Multi-language support', 'Community feedback integration'],
-      image: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
+      examples: ['Rural hospital inclusion', 'Multi-language support', 'Community feedback integration']
     },
     {
       icon: Zap,
       title: 'Innovation Excellence',
       description: 'We leverage cutting-edge technology to solve real-world healthcare challenges.',
-      examples: ['AI-powered predictions', 'Real-time data processing', 'Mobile-first design'],
-      image: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
+      examples: ['AI-powered predictions', 'Real-time data processing', 'Mobile-first design']
     }
   ];
 
@@ -72,16 +68,9 @@ export const MissionPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section with Medical Background */}
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-16 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <img 
-            src="https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop" 
-            alt="Hospital mission background" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <Target className="h-16 w-16 mx-auto mb-6 text-blue-200" />
             <h1 className="text-5xl font-bold mb-6">Our Mission</h1>
@@ -94,75 +83,66 @@ export const MissionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Problem Statement with Background */}
+      {/* Problem Statement */}
       <div className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-12 relative overflow-hidden">
-            <div className="absolute inset-0 opacity-5">
-              <img 
-                src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop" 
-                alt="Healthcare crisis" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="relative z-10">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">The Problem We're Solving</h2>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Healthcare Crisis During COVID-19</h3>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    During the COVID-19 pandemic, countless lives were lost not due to lack of medical facilities, 
-                    but due to lack of real-time information about bed availability, oxygen supplies, and other 
-                    critical resources. Families spent precious hours calling hospitals, driving from one facility 
-                    to another, while their loved ones' conditions deteriorated.
-                  </p>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                      <p className="text-gray-700">Patients died while searching for available ICU beds</p>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                      <p className="text-gray-700">Hospitals had beds but no way to communicate availability</p>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                      <p className="text-gray-700">Emergency services lacked real-time resource information</p>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                      <p className="text-gray-700">Information asymmetry led to resource misallocation</p>
-                    </div>
+          <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">The Problem We're Solving</h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Healthcare Crisis During COVID-19</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  During the COVID-19 pandemic, countless lives were lost not due to lack of medical facilities, 
+                  but due to lack of real-time information about bed availability, oxygen supplies, and other 
+                  critical resources. Families spent precious hours calling hospitals, driving from one facility 
+                  to another, while their loved ones' conditions deteriorated.
+                </p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                    <p className="text-gray-700">Patients died while searching for available ICU beds</p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                    <p className="text-gray-700">Hospitals had beds but no way to communicate availability</p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                    <p className="text-gray-700">Emergency services lacked real-time resource information</p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                    <p className="text-gray-700">Information asymmetry led to resource misallocation</p>
                   </div>
                 </div>
+              </div>
+              
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Our Solution</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Hospify bridges this critical information gap by providing real-time visibility into hospital 
+                  resources, enabling faster decision-making during medical emergencies, and creating a 
+                  transparent ecosystem where healthcare resources can be optimally utilized.
+                </p>
                 
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Our Solution</h3>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    Hospify bridges this critical information gap by providing real-time visibility into hospital 
-                    resources, enabling faster decision-making during medical emergencies, and creating a 
-                    transparent ecosystem where healthcare resources can be optimally utilized.
-                  </p>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                      <p className="text-gray-700">Real-time bed availability across all hospitals</p>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                      <p className="text-gray-700">Instant access to critical resource information</p>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                      <p className="text-gray-700">AI-powered predictions for resource planning</p>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                      <p className="text-gray-700">Seamless integration with existing hospital systems</p>
-                    </div>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <p className="text-gray-700">Real-time bed availability across all hospitals</p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <p className="text-gray-700">Instant access to critical resource information</p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <p className="text-gray-700">AI-powered predictions for resource planning</p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <p className="text-gray-700">Seamless integration with existing hospital systems</p>
                   </div>
                 </div>
               </div>
@@ -171,7 +151,7 @@ export const MissionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Core Values with Images */}
+      {/* Core Values */}
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -183,27 +163,22 @@ export const MissionPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {coreValues.map((value, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl p-8 hover:shadow-lg transition-shadow duration-300 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-5">
-                  <img src={value.image} alt={value.title} className="w-full h-full object-cover" />
+              <div key={index} className="bg-gray-50 rounded-xl p-8 hover:shadow-lg transition-shadow duration-300">
+                <div className="flex items-center mb-6">
+                  <div className="bg-blue-100 p-3 rounded-lg mr-4">
+                    <value.icon className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">{value.title}</h3>
                 </div>
-                <div className="relative z-10">
-                  <div className="flex items-center mb-6">
-                    <div className="bg-blue-100 p-3 rounded-lg mr-4">
-                      <value.icon className="h-8 w-8 text-blue-600" />
+                <p className="text-gray-600 mb-6 leading-relaxed">{value.description}</p>
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-gray-900 text-sm">Examples:</h4>
+                  {value.examples.map((example, exampleIndex) => (
+                    <div key={exampleIndex} className="flex items-center text-sm text-gray-600">
+                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></div>
+                      {example}
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900">{value.title}</h3>
-                  </div>
-                  <p className="text-gray-600 mb-6 leading-relaxed">{value.description}</p>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-gray-900 text-sm">Examples:</h4>
-                    {value.examples.map((example, exampleIndex) => (
-                      <div key={exampleIndex} className="flex items-center text-sm text-gray-600">
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></div>
-                        {example}
-                      </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -211,7 +186,7 @@ export const MissionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Goals & Roadmap with Background */}
+      {/* Goals & Roadmap */}
       <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -223,24 +198,15 @@ export const MissionPage: React.FC = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {goals.map((goalCategory, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg p-6 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-5">
-                  <img 
-                    src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400&h=600&fit=crop" 
-                    alt="Goals background" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="relative z-10">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">{goalCategory.category}</h3>
-                  <div className="space-y-4">
-                    {goalCategory.items.map((item, itemIndex) => (
-                      <div key={itemIndex} className="flex items-start space-x-3">
-                        <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-gray-700 text-sm leading-relaxed">{item}</p>
-                      </div>
-                    ))}
-                  </div>
+              <div key={index} className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">{goalCategory.category}</h3>
+                <div className="space-y-4">
+                  {goalCategory.items.map((item, itemIndex) => (
+                    <div key={itemIndex} className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-gray-700 text-sm leading-relaxed">{item}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -248,7 +214,7 @@ export const MissionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Impact Metrics with Background */}
+      {/* Impact Metrics */}
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -260,16 +226,9 @@ export const MissionPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {impact.map((item, index) => (
-              <div key={index} className="text-center relative">
-                <div className="bg-blue-100 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-10">
-                    <img 
-                      src="https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" 
-                      alt="Impact background" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <item.icon className="h-10 w-10 text-blue-600 relative z-10" />
+              <div key={index} className="text-center">
+                <div className="bg-blue-100 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                  <item.icon className="h-10 w-10 text-blue-600" />
                 </div>
                 <div className="text-4xl font-bold text-blue-600 mb-2">{item.metric}</div>
                 <p className="text-gray-600">{item.description}</p>
@@ -279,16 +238,9 @@ export const MissionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Call to Action with Background */}
-      <div className="py-16 bg-gradient-to-r from-blue-600 to-indigo-700 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <img 
-            src="https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=1200&h=400&fit=crop" 
-            alt="Mission call to action" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      {/* Call to Action */}
+      <div className="py-16 bg-gradient-to-r from-blue-600 to-indigo-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Join Our Mission</h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
             Together, we can build a future where healthcare accessibility is never a barrier to saving lives.
