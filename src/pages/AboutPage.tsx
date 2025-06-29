@@ -7,37 +7,43 @@ export const AboutPage: React.FC = () => {
       icon: Clock,
       title: 'Real-Time Updates',
       description: 'Live hospital data updated every 15 minutes through direct API integrations with hospital management systems.',
-      details: ['Direct HMS integration', 'IoT sensor networks', 'Automated data validation', 'Real-time notifications']
+      details: ['Direct HMS integration', 'IoT sensor networks', 'Automated data validation', 'Real-time notifications'],
+      image: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       icon: Shield,
       title: 'Verified Information',
       description: 'All hospital data is verified through multiple sources including government health authorities and direct hospital partnerships.',
-      details: ['Government verification', 'Hospital partnerships', 'Data accuracy checks', 'Continuous monitoring']
+      details: ['Government verification', 'Hospital partnerships', 'Data accuracy checks', 'Continuous monitoring'],
+      image: 'https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       icon: Heart,
       title: 'Emergency Ready',
       description: 'Optimized for emergency situations with instant access to nearest available medical facilities and resources.',
-      details: ['Emergency protocols', 'Instant notifications', 'Priority routing', 'Crisis management']
+      details: ['Emergency protocols', 'Instant notifications', 'Priority routing', 'Crisis management'],
+      image: 'https://images.pexels.com/photos/236380/pexels-photo-236380.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       icon: Users,
       title: 'Community Driven',
       description: 'Built with input from healthcare professionals, patients, families, and emergency responders across India.',
-      details: ['Healthcare professionals', 'Patient feedback', 'Emergency responders', 'Community input']
+      details: ['Healthcare professionals', 'Patient feedback', 'Emergency responders', 'Community input'],
+      image: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       icon: Award,
       title: 'Trusted Platform',
       description: 'Recognized by health ministries and trusted by over 100,000+ families nationwide with 99.9% uptime.',
-      details: ['Ministry recognition', 'Industry awards', 'High reliability', 'Proven track record']
+      details: ['Ministry recognition', 'Industry awards', 'High reliability', 'Proven track record'],
+      image: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       icon: Globe,
       title: 'Nationwide Coverage',
       description: 'Currently covering 500+ cities across India with plans for international expansion to Southeast Asia.',
-      details: ['500+ cities covered', 'Multi-language support', 'Regional partnerships', 'International expansion']
+      details: ['500+ cities covered', 'Multi-language support', 'Regional partnerships', 'International expansion'],
+      image: 'https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     }
   ];
 
@@ -52,9 +58,16 @@ export const AboutPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hero Section with Medical Background */}
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-16 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <img 
+            src="https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop" 
+            alt="Hospital background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
             <h1 className="text-5xl font-bold mb-6">About Hospify</h1>
             <p className="text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
@@ -65,11 +78,18 @@ export const AboutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Mission Statement */}
+      {/* Mission Statement with Background */}
       <div className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-12 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-5">
+              <img 
+                src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop" 
+                alt="Medical equipment" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
               <div>
                 <div className="flex items-center mb-6">
                   <Target className="h-8 w-8 text-blue-600 mr-3" />
@@ -121,7 +141,7 @@ export const AboutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Features Grid */}
+      {/* Features Grid with Images */}
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -136,21 +156,26 @@ export const AboutPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
-                <div className="flex items-center mb-4">
-                  <div className="bg-blue-100 p-3 rounded-lg mr-4">
-                    <feature.icon className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
+              <div key={index} className="bg-gray-50 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5">
+                  <img src={feature.image} alt={feature.title} className="w-full h-full object-cover" />
                 </div>
-                <p className="text-gray-600 leading-relaxed mb-4">{feature.description}</p>
-                <div className="space-y-2">
-                  {feature.details.map((detail, detailIndex) => (
-                    <div key={detailIndex} className="flex items-center text-sm text-gray-500">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></div>
-                      {detail}
+                <div className="relative z-10">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-blue-100 p-3 rounded-lg mr-4">
+                      <feature.icon className="h-6 w-6 text-blue-600" />
                     </div>
-                  ))}
+                    <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed mb-4">{feature.description}</p>
+                  <div className="space-y-2">
+                    {feature.details.map((detail, detailIndex) => (
+                      <div key={detailIndex} className="flex items-center text-sm text-gray-500">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></div>
+                        {detail}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -158,7 +183,7 @@ export const AboutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Timeline */}
+      {/* Timeline with Background */}
       <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -180,10 +205,19 @@ export const AboutPage: React.FC = () => {
                   
                   {/* Content */}
                   <div className={`w-5/12 ${index % 2 === 0 ? 'pr-8 text-right' : 'pl-8 text-left'}`}>
-                    <div className="bg-white rounded-lg shadow-lg p-6">
-                      <div className="text-2xl font-bold text-blue-600 mb-2">{milestone.year}</div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{milestone.title}</h3>
-                      <p className="text-gray-600">{milestone.description}</p>
+                    <div className="bg-white rounded-lg shadow-lg p-6 relative overflow-hidden">
+                      <div className="absolute inset-0 opacity-5">
+                        <img 
+                          src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&fit=crop" 
+                          alt="Timeline background" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="relative z-10">
+                        <div className="text-2xl font-bold text-blue-600 mb-2">{milestone.year}</div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{milestone.title}</h3>
+                        <p className="text-gray-600">{milestone.description}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -193,9 +227,16 @@ export const AboutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div className="py-16 bg-gradient-to-r from-blue-600 to-indigo-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Call to Action with Background */}
+      <div className="py-16 bg-gradient-to-r from-blue-600 to-indigo-700 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <img 
+            src="https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=1200&h=400&fit=crop" 
+            alt="Healthcare background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="text-3xl font-bold text-white mb-4">Join Our Mission</h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
             Be part of the healthcare revolution. Whether you're a hospital, developer, or healthcare professional, 
