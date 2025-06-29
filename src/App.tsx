@@ -10,14 +10,18 @@ import { HospitalCard } from './components/HospitalCard';
 import { EmergencyModal } from './components/EmergencyModal';
 import { EnhancedMapView } from './components/map/EnhancedMapView';
 import { StatsOverview } from './components/StatsOverview';
-import { AboutSection } from './components/AboutSection';
-import { HowItWorksSection } from './components/HowItWorksSection';
-import { TestimonialsSection } from './components/TestimonialsSection';
-import { ResourcesSection } from './components/ResourcesSection';
 import { Footer } from './components/Footer';
 import { LoginForm } from './components/auth/LoginForm';
 import { RegisterForm } from './components/auth/RegisterForm';
 import { HospitalDashboard } from './components/dashboard/HospitalDashboard';
+
+// New Pages
+import { HomePage } from './pages/HomePage';
+import { AboutPage } from './pages/AboutPage';
+import { MissionPage } from './pages/MissionPage';
+import { CommunityPage } from './pages/CommunityPage';
+import { TechnologyPage } from './pages/TechnologyPage';
+import { FuturePage } from './pages/FuturePage';
 
 // Types and Utils
 import { HospitalProfile, BedAvailability, UserLocation } from './types';
@@ -336,275 +340,57 @@ function App() {
     );
   }
 
-  // Main Public Interface
+  // Router for different pages
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header 
-        onEmergencyClick={() => setIsEmergencyModalOpen(true)}
-        user={user}
-        onAuthClick={() => setShowAuth(true)}
-        onSignOut={handleSignOut}
-      />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Real-time Hospital Resource Tracking - Pune
-          </h2>
-          <p className="text-gray-600">
-            Find available beds, ambulances, and medical resources in hospitals around Pune
-          </p>
-        </div>
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          onEmergencyClick={() => setIsEmergencyModalOpen(true)}
+          user={user}
+          onAuthClick={() => setShowAuth(true)}
+          onSignOut={handleSignOut}
+        />
+        
+        <Routes>
+          <Route path="/" element={
+            <HomePage 
+              hospitals={hospitalsWithDistance}
+              availability={availability}
+              userLocation={userLocation}
+              locationDetected={locationDetected}
+              searchRadius={searchRadius}
+              setSearchRadius={setSearchRadius}
+              handleNearestHospital={handleNearestHospital}
+              locationError={locationError}
+              setLocationError={setLocationError}
+              dataLoading={dataLoading}
+              activeView={activeView}
+              setActiveView={setActiveView}
+              hospitalsToShow={hospitalsToShow}
+              showingAll={showingAll}
+              handleShowMore={handleShowMore}
+              getHospitalsToDisplay={getHospitalsToDisplay}
+              selectedHospital={selectedHospital}
+              handleHospitalSelect={handleHospitalSelect}
+              displayHospitals={displayHospitals}
+              viewButtons={viewButtons}
+            />
+          } />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/mission" element={<MissionPage />} />
+          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/technology" element={<TechnologyPage />} />
+          <Route path="/future" element={<FuturePage />} />
+        </Routes>
 
-        {locationError && (
-          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start space-x-3">
-            <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-yellow-800 font-medium">Location Notice</p>
-              <p className="text-yellow-700 text-sm mt-1">{locationError}</p>
-            </div>
-            <button
-              onClick={() => setLocationError(null)}
-              className="text-yellow-500 hover:text-yellow-700 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        )}
+        <Footer />
 
-        {/* Quick Actions Bar */}
-        <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleNearestHospital}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors duration-200"
-              >
-                <Navigation className="h-4 w-4" />
-                <span>Find Nearest Hospital</span>
-              </button>
-              
-              <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700">Search Radius:</label>
-                <select
-                  value={searchRadius}
-                  onChange={(e) => setSearchRadius(Number(e.target.value))}
-                  className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                >
-                  <option value={10}>10 km</option>
-                  <option value={25}>25 km</option>
-                  <option value={50}>50 km</option>
-                  <option value={100}>100 km</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="text-sm text-gray-500">
-              {locationDetected ? (
-                <div className="flex items-center text-green-600">
-                  <Navigation className="h-4 w-4 mr-1" />
-                  <span>Location detected</span>
-                </div>
-              ) : (
-                <span>Showing Pune area hospitals</span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <StatsOverview hospitals={displayHospitals} availability={availability} />
-
-        <div className="mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-              {viewButtons.map((button) => (
-                <button
-                  key={button.key}
-                  onClick={() => setActiveView(button.key as any)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
-                    activeView === button.key
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  <button.icon className="h-4 w-4" />
-                  <span>{button.label}</span>
-                </button>
-              ))}
-            </div>
-            <div className="text-sm text-gray-500">
-              Showing {hospitalsToShow} of {hospitalsWithDistance.length} hospitals in Pune area
-              {locationDetected && ` within ${searchRadius}km of your location`}
-              {hospitalsWithDistance.length > 0 && hospitalsWithDistance[0] && ` (nearest: ${hospitalsWithDistance[0]?.distance?.toFixed(1)}km)`}
-            </div>
-          </div>
-        </div>
-
-        {dataLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading Pune hospital data...</p>
-          </div>
-        ) : (
-          <>
-            {activeView === 'list' && (
-              <div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {getHospitalsToDisplay().map((hospital) => (
-                    <HospitalCard
-                      key={hospital.id}
-                      hospital={hospital}
-                      availability={availability[hospital.id]}
-                      distance={hospital.distance}
-                      onClick={() => handleHospitalSelect(hospital)}
-                    />
-                  ))}
-                </div>
-                
-                {/* Show More Button */}
-                {hospitalsWithDistance.length > 10 && (
-                  <div className="mt-8 text-center">
-                    <button
-                      onClick={handleShowMore}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium flex items-center space-x-2 mx-auto transition-colors duration-200 shadow-lg"
-                    >
-                      <span>
-                        {showingAll 
-                          ? 'Show Less' 
-                          : `Show More Hospitals (${hospitalsWithDistance.length - hospitalsToShow} remaining)`
-                        }
-                      </span>
-                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showingAll ? 'rotate-180' : ''}`} />
-                    </button>
-                    <p className="text-sm text-gray-500 mt-2">
-                      {showingAll 
-                        ? `Showing all ${hospitalsWithDistance.length} hospitals`
-                        : `Showing ${hospitalsToShow} of ${hospitalsWithDistance.length} hospitals`
-                      }
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeView === 'map' && (
-              <EnhancedMapView
-                hospitals={displayHospitals}
-                availability={availability}
-                userLocation={userLocation}
-                selectedHospital={selectedHospital}
-                onHospitalSelect={handleHospitalSelect}
-                maxDistance={searchRadius}
-                maxResults={40}
-              />
-            )}
-
-            {activeView === 'stats' && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">Pune Hospital Statistics</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-4">Top Hospitals by Availability</h4>
-                    <div className="space-y-3">
-                      {displayHospitals.slice(0, 5).map((hospital) => {
-                        const hospitalAvailability = availability[hospital.id];
-                        const distance = hospitalsWithDistance.find(h => h.id === hospital.id)?.distance;
-                        
-                        return (
-                          <div key={hospital.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                            <div className="flex-1">
-                              <span className="font-medium text-gray-900 truncate block">{hospital.name}</span>
-                              <div className="flex items-center space-x-2 text-xs text-gray-500">
-                                <span>{hospital.address.split(',')[1]?.trim()}</span>
-                                {distance && <span>• {distance.toFixed(1)}km away</span>}
-                              </div>
-                            </div>
-                            <div className="flex space-x-2">
-                              <span className="text-sm text-gray-600">
-                                ICU: {hospitalAvailability?.icuBeds.available || 0}
-                              </span>
-                              <span className="text-sm text-gray-600">
-                                General: {hospitalAvailability?.generalBeds.available || 0}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-4">System Status</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                        <span className="text-gray-900">Total Hospitals</span>
-                        <span className="font-bold text-green-600">{displayHospitals.length}</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                        <span className="text-gray-900">Verified Hospitals</span>
-                        <span className="font-bold text-blue-600">
-                          {displayHospitals.filter(h => h.isVerified).length}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                        <span className="text-gray-900">Last Updated</span>
-                        <span className="font-bold text-yellow-600">Live</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                        <span className="text-gray-900">Search Area</span>
-                        <span className="font-bold text-purple-600">
-                          {locationDetected ? `${searchRadius}km radius` : 'Pune City'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
-                        <span className="text-gray-900">Showing</span>
-                        <span className="font-bold text-indigo-600">
-                          {hospitalsToShow} of {hospitalsWithDistance.length}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {displayHospitals.length === 0 && !dataLoading && (
-              <div className="text-center py-12">
-                <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No hospitals found</h3>
-                <p className="text-gray-600">
-                  {locationDetected 
-                    ? `No hospitals found within ${searchRadius}km of your location. Try increasing the search radius.`
-                    : 'Try enabling location services to find nearby hospitals.'
-                  }
-                </p>
-                {locationDetected && (
-                  <button
-                    onClick={() => setSearchRadius(Math.min(searchRadius + 25, 100))}
-                    className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Increase radius to {Math.min(searchRadius + 25, 100)}km
-                  </button>
-                )}
-              </div>
-            )}
-          </>
-        )}
-      </main>
-
-      {/* Additional Sections */}
-      <AboutSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <ResourcesSection />
-      
-      <Footer />
-
-      <EmergencyModal
-        isOpen={isEmergencyModalOpen}
-        onClose={() => setIsEmergencyModalOpen(false)}
-      />
-    </div>
+        <EmergencyModal
+          isOpen={isEmergencyModalOpen}
+          onClose={() => setIsEmergencyModalOpen(false)}
+        />
+      </div>
+    </Router>
   );
 }
 
