@@ -46,6 +46,14 @@ export interface Hospital {
   emergencyContacts: string[];
 }
 
+export interface SearchFilters {
+  city: string;
+  pincode: string;
+  resourceType: 'all' | 'icu' | 'general' | 'oxygen' | 'ventilator' | 'ambulance';
+  availabilityOnly: boolean;
+  radius: number;
+}
+
 export interface UserLocation {
   latitude: number;
   longitude: number;
