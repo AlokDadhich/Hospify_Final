@@ -60,16 +60,34 @@ function App() {
   
   // Pagination state
   const [hospitalsToShow, setHospitalsToShow] = useState(10); // Start with 10 hospitals
-  const [showingAll, setShowingAll] = useState(false);
 
-  // Initialize auth listener
+  // Initialize auth listener and ensure clean state
   useEffect(() => {
-    const unsubscribe = AuthService.onAuthStateChanged((user) => {
-      setUser(user);
-      setAuthLoading(false);
-    });
+    const initializeAuth = async () => {
+      try {
+        // First, ensure we're signed out to start fresh
+        await AuthService.signOut();
+        
+        // Set up auth state listener
+        const unsubscribe = AuthService.onAuthStateChanged((user) => {
+          setUser(user);
+          setAuthLoading(false);
+        });
 
-    return unsubscribe;
+        return unsubscribe;
+      } catch (error) {
+        console.warn('Auth initialization warning:', error);
+        setAuthLoading(false);
+      }
+    };
+
+    const unsubscribePromise = initializeAuth();
+    
+    return () => {
+      unsubscribePromise.then(unsubscribe => {
+        if (unsubscribe) unsubscribe();
+      });
+    };
   }, []);
 
   // Load hospital data
@@ -104,7 +122,6 @@ function App() {
       
       // Reset pagination when location changes
       setHospitalsToShow(10);
-      setShowingAll(false);
     } else {
       // Without location, show Pune hospitals
       const puneHospitals = allHospitals.filter(h => 
@@ -117,7 +134,6 @@ function App() {
       
       // Reset pagination
       setHospitalsToShow(10);
-      setShowingAll(false);
     }
   }, [userLocation, allHospitals, searchRadius, locationDetected]);
 
@@ -214,6 +230,8 @@ function App() {
   const handleSignOut = async () => {
     try {
       await AuthService.signOut();
+      // Force reload to ensure clean state
+      window.location.reload();
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -226,12 +244,11 @@ function App() {
 
   // Handle show more hospitals
   const handleShowMore = () => {
+    const showingAll = hospitalsToShow >= hospitalsWithDistance.length;
     if (showingAll) {
       setHospitalsToShow(10);
-      setShowingAll(false);
     } else {
       setHospitalsToShow(hospitalsWithDistance.length);
-      setShowingAll(true);
     }
   };
 
@@ -254,58 +271,6 @@ function App() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
         </div>
-      </div>
-    );
-  }
-
-  // Hospital Dashboard Route (for authenticated hospital users)
-  if (user && window.location.pathname === '/dashboard') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow-lg border-b-2 border-blue-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-3">
-                <div className="bg-blue-600 p-2 rounded-lg">
-                  <MapPin className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Hospify</h1>
-                  <p className="text-xs text-gray-600">Hospital Dashboard</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-700">Welcome, {user.user_metadata?.display_name || user.email}</span>
-                <button
-                  onClick={() => window.location.href = '/'}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors duration-200"
-                >
-                  <Settings className="h-4 w-4" />
-                  <span>Public View</span>
-                </button>
-                <button
-                  onClick={handleSignOut}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors duration-200"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-        
-        <HospitalDashboard 
-          hospitalId="sample-hospital-id" 
-          onDataUpdate={(updatedAvailability) => {
-            // Update the availability state when hospital updates data
-            setAvailability(prev => ({
-              ...prev,
-              [updatedAvailability.hospitalId]: updatedAvailability
-            }));
-          }}
-        />
       </div>
     );
   }
@@ -367,7 +332,7 @@ function App() {
               activeView={activeView}
               setActiveView={setActiveView}
               hospitalsToShow={hospitalsToShow}
-              showingAll={showingAll}
+              showingAll={hospitalsToShow >= hospitalsWithDistance.length}
               handleShowMore={handleShowMore}
               getHospitalsToDisplay={getHospitalsToDisplay}
               selectedHospital={selectedHospital}
@@ -381,6 +346,60 @@ function App() {
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/technology" element={<TechnologyPage />} />
           <Route path="/future" element={<FuturePage />} />
+          <Route path="/dashboard" element={
+            user ? (
+              <div className="min-h-screen bg-gray-50">
+                <header className="bg-white shadow-lg border-b-2 border-blue-100">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-16">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-blue-600 p-2 rounded-lg">
+                          <MapPin className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <h1 className="text-2xl font-bold text-gray-900">Hospify</h1>
+                          <p className="text-xs text-gray-600">Hospital Dashboard</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-4">
+                        <span className="text-gray-700">
+                          Welcome, {user.user_metadata?.hospital_name || 'Hospital Admin'}
+                        </span>
+                        <button
+                          onClick={() => window.location.href = '/'}
+                          className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors duration-200"
+                        >
+                          <Settings className="h-4 w-4" />
+                          <span>Public View</span>
+                        </button>
+                        <button
+                          onClick={handleSignOut}
+                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors duration-200"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </header>
+                
+                <HospitalDashboard 
+                  hospitalId="sample-hospital-id" 
+                  onDataUpdate={(updatedAvailability) => {
+                    // Update the availability state when hospital updates data
+                    setAvailability(prev => ({
+                      ...prev,
+                      [updatedAvailability.hospitalId]: updatedAvailability
+                    }));
+                  }}
+                />
+              </div>
+            ) : (
+              <Navigate to="/" replace />
+            )
+          } />
         </Routes>
 
         <Footer />

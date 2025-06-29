@@ -30,6 +30,21 @@ export const Header: React.FC<HeaderProps> = ({
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Get display name for user
+  const getUserDisplayName = (user: SupabaseUser) => {
+    if (user.user_metadata?.hospital_name) {
+      return user.user_metadata.hospital_name;
+    }
+    if (user.user_metadata?.display_name) {
+      return user.user_metadata.display_name;
+    }
+    // Don't show email if it's a test/system email
+    if (user.email && !user.email.includes('@hospify.local')) {
+      return user.email;
+    }
+    return 'Hospital Admin';
+  };
+
   return (
     <header className="bg-white shadow-lg border-b-2 border-blue-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,15 +90,15 @@ export const Header: React.FC<HeaderProps> = ({
             {user ? (
               <div className="flex items-center space-x-3">
                 <span className="text-gray-700 text-sm">
-                  Welcome, {user.user_metadata?.display_name || user.email}
+                  Welcome, {getUserDisplayName(user)}
                 </span>
-                <button
-                  onClick={() => window.location.href = '/dashboard'}
+                <Link
+                  to="/dashboard"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors duration-200"
                 >
                   <Settings className="h-4 w-4" />
                   <span>Dashboard</span>
-                </button>
+                </Link>
                 <button
                   onClick={onSignOut}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors duration-200"
@@ -146,18 +161,16 @@ export const Header: React.FC<HeaderProps> = ({
                 {user ? (
                   <div className="space-y-2">
                     <p className="text-sm text-gray-600 text-center">
-                      Welcome, {user.user_metadata?.display_name || user.email}
+                      Welcome, {getUserDisplayName(user)}
                     </p>
-                    <button
-                      onClick={() => {
-                        window.location.href = '/dashboard';
-                        setIsMenuOpen(false);
-                      }}
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setIsMenuOpen(false)}
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors duration-200"
                     >
                       <Settings className="h-4 w-4" />
                       <span>Dashboard</span>
-                    </button>
+                    </Link>
                     <button
                       onClick={() => {
                         onSignOut?.();
