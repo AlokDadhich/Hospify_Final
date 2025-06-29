@@ -6,7 +6,7 @@ import { HospitalService } from '../../services/hospitalService';
 declare global {
   interface Window {
     google: any;
-    initMap: () => void;
+    initGoogleMap: () => void;
   }
 }
 
@@ -41,8 +41,7 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
   const [searchStatus, setSearchStatus] = useState<string>('Initializing...');
   const [filterType, setFilterType] = useState<'all' | 'icu' | 'general' | 'oxygen'>('all');
 
-  // Use environment variable or fallback to a working demo key
-  const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTuTlWnAGHC07uWQxVkdVfuI';
+  const API_KEY = 'AIzaSyD-hTQrtpPYyQZ49NhuMFAppgacyO89LBA';
   const DEFAULT_CENTER = { lat: 18.5204, lng: 73.8567 }; // Pune center
 
   useEffect(() => {
@@ -138,28 +137,42 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
         // Generate sample data if no real data available
         const sampleHospitals = generateSampleHospitals();
         setHospitals(sampleHospitals);
+        
+        // Generate sample availability for each hospital
+        const sampleAvailabilityMap: { [key: string]: BedAvailability } = {};
+        sampleHospitals.forEach(hospital => {
+          sampleAvailabilityMap[hospital.id] = generateSampleAvailability(hospital.id);
+        });
+        setAvailability(sampleAvailabilityMap);
       } else {
         setHospitals(hospitalData);
+        
+        // Subscribe to real-time bed availability updates
+        const unsubscribe = HospitalService.subscribeToAllBedAvailability((availabilityData) => {
+          const availabilityMap: { [key: string]: BedAvailability } = {};
+          availabilityData.forEach(item => {
+            availabilityMap[item.hospitalId] = item;
+          });
+          setAvailability(availabilityMap);
+        });
       }
 
-      // Subscribe to real-time bed availability updates
-      const unsubscribe = HospitalService.subscribeToAllBedAvailability((availabilityData) => {
-        const availabilityMap: { [key: string]: BedAvailability } = {};
-        availabilityData.forEach(item => {
-          availabilityMap[item.hospitalId] = item;
-        });
-        setAvailability(availabilityMap);
-      });
-
-      setSearchStatus(`Found ${hospitalData.length || 12} hospitals`);
+      setSearchStatus(`Found ${hospitalData.length || 6} hospitals`);
       setIsLoading(false);
 
-      return unsubscribe;
     } catch (error) {
       console.error('Error loading hospitals:', error);
       // Use sample data as fallback
       const sampleHospitals = generateSampleHospitals();
       setHospitals(sampleHospitals);
+      
+      // Generate sample availability for each hospital
+      const sampleAvailabilityMap: { [key: string]: BedAvailability } = {};
+      sampleHospitals.forEach(hospital => {
+        sampleAvailabilityMap[hospital.id] = generateSampleAvailability(hospital.id);
+      });
+      setAvailability(sampleAvailabilityMap);
+      
       setSearchStatus(`Showing sample data (${sampleHospitals.length} hospitals)`);
       setIsLoading(false);
     }
@@ -267,33 +280,44 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
   };
 
   const generateSampleAvailability = (hospitalId: string): BedAvailability => {
+    const icuTotal = 20 + Math.floor(Math.random() * 30);
+    const icuAvailable = Math.floor(Math.random() * 15) + 5;
+    const generalTotal = 100 + Math.floor(Math.random() * 100);
+    const generalAvailable = Math.floor(Math.random() * 50) + 20;
+    const oxygenTotal = 30 + Math.floor(Math.random() * 40);
+    const oxygenAvailable = Math.floor(Math.random() * 20) + 10;
+    const ventilatorTotal = 10 + Math.floor(Math.random() * 15);
+    const ventilatorAvailable = Math.floor(Math.random() * 8) + 2;
+    const ambulanceTotal = 5 + Math.floor(Math.random() * 5);
+    const ambulanceAvailable = Math.floor(Math.random() * 3) + 1;
+
     return {
       id: `availability_${hospitalId}`,
       hospitalId,
       icuBeds: {
-        total: 20 + Math.floor(Math.random() * 30),
-        available: Math.floor(Math.random() * 15) + 5,
-        occupied: 0
+        total: icuTotal,
+        available: icuAvailable,
+        occupied: icuTotal - icuAvailable
       },
       generalBeds: {
-        total: 100 + Math.floor(Math.random() * 100),
-        available: Math.floor(Math.random() * 50) + 20,
-        occupied: 0
+        total: generalTotal,
+        available: generalAvailable,
+        occupied: generalTotal - generalAvailable
       },
       oxygenBeds: {
-        total: 30 + Math.floor(Math.random() * 40),
-        available: Math.floor(Math.random() * 20) + 10,
-        occupied: 0
+        total: oxygenTotal,
+        available: oxygenAvailable,
+        occupied: oxygenTotal - oxygenAvailable
       },
       ventilators: {
-        total: 10 + Math.floor(Math.random() * 15),
-        available: Math.floor(Math.random() * 8) + 2,
-        occupied: 0
+        total: ventilatorTotal,
+        available: ventilatorAvailable,
+        occupied: ventilatorTotal - ventilatorAvailable
       },
       ambulances: {
-        total: 5 + Math.floor(Math.random() * 5),
-        available: Math.floor(Math.random() * 3) + 1,
-        onDuty: 0
+        total: ambulanceTotal,
+        available: ambulanceAvailable,
+        onDuty: ambulanceTotal - ambulanceAvailable
       },
       lastUpdated: new Date().toISOString(),
       updatedBy: 'system'
