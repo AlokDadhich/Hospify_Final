@@ -134,13 +134,9 @@ export class HospitalService {
   }
 
   static subscribeToAllBedAvailability(callback: (availability: BedAvailability[]) => void): () => void {
-    const channel = supabase
-      .channel('bed_availability_changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'bed_availability'
-      }, (payload) => {
+    const subscription = supabase
+      .from('bed_availability')
+      .on('*', (payload) => {
         // Refetch all data when any change occurs
         this.getAllBedAvailability().then(callback);
       })
@@ -150,7 +146,7 @@ export class HospitalService {
     this.getAllBedAvailability().then(callback);
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeSubscription(subscription);
     };
   }
 
