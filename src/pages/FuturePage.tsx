@@ -15,7 +15,8 @@ export const FuturePage: React.FC = () => {
         'Launch mobile applications for iOS and Android'
       ],
       technologies: ['HMS API Integration', 'IoT Sensors', 'Real-time Database', 'Mobile Apps'],
-      impact: 'Reduce emergency response time by 40%'
+      impact: 'Reduce emergency response time by 40%',
+      image: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       phase: 'Phase 2: AI & Predictions',
@@ -29,7 +30,8 @@ export const FuturePage: React.FC = () => {
         'Integrate with national health information systems'
       ],
       technologies: ['Machine Learning', 'Predictive Analytics', 'AI Algorithms', 'Big Data Processing'],
-      impact: 'Prevent 80% of resource shortages through prediction'
+      impact: 'Prevent 80% of resource shortages through prediction',
+      image: 'https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       phase: 'Phase 3: Smart Healthcare',
@@ -43,7 +45,8 @@ export const FuturePage: React.FC = () => {
         'Achieve universal healthcare accessibility'
       ],
       technologies: ['Blockchain', 'Telemedicine', 'Global Networks', 'Quantum Computing'],
-      impact: 'Save 1M+ lives annually through intelligent healthcare'
+      impact: 'Save 1M+ lives annually through intelligent healthcare',
+      image: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     }
   ];
 
@@ -58,7 +61,8 @@ export const FuturePage: React.FC = () => {
         'Real-time decision support',
         'Automated emergency protocols'
       ],
-      timeline: '2026-2027'
+      timeline: '2026-2027',
+      image: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       icon: Shield,
@@ -70,7 +74,8 @@ export const FuturePage: React.FC = () => {
         'Cross-provider interoperability',
         'Privacy-preserving analytics'
       ],
-      timeline: '2028-2029'
+      timeline: '2028-2029',
+      image: 'https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       icon: Globe,
@@ -82,7 +87,8 @@ export const FuturePage: React.FC = () => {
         'Cross-border medical collaboration',
         'Universal health data standards'
       ],
-      timeline: '2029-2030'
+      timeline: '2029-2030',
+      image: 'https://images.pexels.com/photos/236380/pexels-photo-236380.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       icon: Smartphone,
@@ -94,7 +100,8 @@ export const FuturePage: React.FC = () => {
         'Wearable device integration',
         'Personalized health insights'
       ],
-      timeline: '2027-2028'
+      timeline: '2027-2028',
+      image: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     }
   ];
 
@@ -154,9 +161,16 @@ export const FuturePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hero Section with Future Background */}
+      <div className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white py-16 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <img 
+            src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop" 
+            alt="Future healthcare background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
             <Rocket className="h-16 w-16 mx-auto mb-6 text-purple-200" />
             <h1 className="text-5xl font-bold mb-6">The Future of Healthcare</h1>
@@ -169,7 +183,7 @@ export const FuturePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Development Phases */}
+      {/* Development Phases with Images */}
       <div className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -181,8 +195,11 @@ export const FuturePage: React.FC = () => {
 
           <div className="space-y-12">
             {phases.map((phase, index) => (
-              <div key={index} className="bg-white rounded-2xl shadow-xl p-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div key={index} className="bg-white rounded-2xl shadow-xl p-8 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5">
+                  <img src={phase.image} alt={phase.phase} className="w-full h-full object-cover" />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
                   <div className="lg:col-span-2">
                     <div className="flex items-center mb-4">
                       <h3 className="text-2xl font-bold text-gray-900 mr-4">{phase.phase}</h3>
@@ -235,7 +252,7 @@ export const FuturePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Future Innovations */}
+      {/* Future Innovations with Images */}
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -247,24 +264,29 @@ export const FuturePage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {innovations.map((innovation, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
-                <div className="flex items-center mb-4">
-                  <div className="bg-purple-100 p-3 rounded-lg mr-4">
-                    <innovation.icon className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">{innovation.title}</h3>
-                    <p className="text-sm text-purple-600 font-medium">{innovation.timeline}</p>
-                  </div>
+              <div key={index} className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5">
+                  <img src={innovation.image} alt={innovation.title} className="w-full h-full object-cover" />
                 </div>
-                <p className="text-gray-600 mb-4 leading-relaxed">{innovation.description}</p>
-                <div className="space-y-2">
-                  {innovation.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-center text-sm text-gray-600">
-                      <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mr-2"></div>
-                      {feature}
+                <div className="relative z-10">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-purple-100 p-3 rounded-lg mr-4">
+                      <innovation.icon className="h-8 w-8 text-purple-600" />
                     </div>
-                  ))}
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">{innovation.title}</h3>
+                      <p className="text-sm text-purple-600 font-medium">{innovation.timeline}</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 mb-4 leading-relaxed">{innovation.description}</p>
+                  <div className="space-y-2">
+                    {innovation.features.map((feature, featureIndex) => (
+                      <div key={featureIndex} className="flex items-center text-sm text-gray-600">
+                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mr-2"></div>
+                        {feature}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -272,7 +294,7 @@ export const FuturePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Technology Maturity */}
+      {/* Technology Maturity with Background */}
       <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -284,8 +306,15 @@ export const FuturePage: React.FC = () => {
 
           <div className="space-y-6">
             {technologies.map((tech, index) => (
-              <div key={index} className="bg-white rounded-xl p-6 shadow-lg">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+              <div key={index} className="bg-white rounded-xl p-6 shadow-lg relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5">
+                  <img 
+                    src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=1200&h=200&fit=crop" 
+                    alt="Technology background" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center relative z-10">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 mb-2">{tech.name}</h3>
                     <p className="text-gray-600 text-sm">{tech.description}</p>
@@ -320,7 +349,7 @@ export const FuturePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Impact Goals */}
+      {/* Impact Goals with Background */}
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -333,8 +362,15 @@ export const FuturePage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {impactGoals.map((goal, index) => (
               <div key={index} className="text-center">
-                <div className="bg-gray-50 p-6 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-                  <goal.icon className={`h-12 w-12 ${goal.color}`} />
+                <div className="bg-gray-50 p-6 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-10">
+                    <img 
+                      src="https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" 
+                      alt="Impact goal" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <goal.icon className={`h-12 w-12 ${goal.color} relative z-10`} />
                 </div>
                 <div className={`text-4xl font-bold mb-2 ${goal.color}`}>{goal.metric}</div>
                 <p className="text-gray-600 font-medium">{goal.description}</p>
@@ -344,9 +380,16 @@ export const FuturePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div className="py-16 bg-gradient-to-r from-purple-600 to-indigo-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Call to Action with Background */}
+      <div className="py-16 bg-gradient-to-r from-purple-600 to-indigo-700 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <img 
+            src="https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=1200&h=400&fit=crop" 
+            alt="Future call to action" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="text-3xl font-bold text-white mb-4">Shape the Future with Us</h2>
           <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
             Join us in building the future of healthcare technology. Whether you're a developer, 

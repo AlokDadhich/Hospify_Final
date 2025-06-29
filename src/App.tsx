@@ -276,7 +276,6 @@ function App() {
               </div>
               
               <div className="flex items-center space-x-4">
-                <span className="text-gray-700">Welcome, {user.user_metadata?.display_name || user.email}</span>
                 <button
                   onClick={() => window.location.href = '/'}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors duration-200"

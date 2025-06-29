@@ -11,7 +11,8 @@ export const TechnologyPage: React.FC = () => {
         { name: 'TypeScript', description: 'Type-safe development for better code quality' },
         { name: 'Tailwind CSS', description: 'Utility-first CSS framework for rapid styling' },
         { name: 'Vite', description: 'Fast build tool and development server' }
-      ]
+      ],
+      image: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       category: 'Backend & Database',
@@ -21,7 +22,8 @@ export const TechnologyPage: React.FC = () => {
         { name: 'PostgreSQL', description: 'Robust relational database for complex queries' },
         { name: 'Real-time APIs', description: 'Live data synchronization across all clients' },
         { name: 'Row Level Security', description: 'Database-level security for data protection' }
-      ]
+      ],
+      image: 'https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       category: 'Cloud & Infrastructure',
@@ -31,7 +33,8 @@ export const TechnologyPage: React.FC = () => {
         { name: 'CDN Distribution', description: 'Global content delivery for fast loading' },
         { name: 'Auto-scaling', description: 'Automatic resource scaling based on demand' },
         { name: 'Monitoring & Analytics', description: 'Real-time performance monitoring' }
-      ]
+      ],
+      image: 'https://images.pexels.com/photos/236380/pexels-photo-236380.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       category: 'Security & Compliance',
@@ -41,7 +44,8 @@ export const TechnologyPage: React.FC = () => {
         { name: 'End-to-end Encryption', description: 'Data encryption in transit and at rest' },
         { name: 'OAuth 2.0', description: 'Secure authentication and authorization' },
         { name: 'Audit Logging', description: 'Comprehensive activity tracking' }
-      ]
+      ],
+      image: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     }
   ];
 
@@ -51,28 +55,32 @@ export const TechnologyPage: React.FC = () => {
       description: 'Direct API integration with existing hospital software',
       features: ['Real-time bed status updates', 'Patient admission/discharge tracking', 'Resource availability sync', 'Emergency alerts'],
       status: 'Active',
-      icon: Database
+      icon: Database,
+      image: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       title: 'IoT Sensor Networks',
       description: 'Smart sensors for automated resource monitoring',
       features: ['Bed occupancy sensors', 'Equipment status monitoring', 'Environmental tracking', 'Predictive maintenance'],
       status: 'In Development',
-      icon: Wifi
+      icon: Wifi,
+      image: 'https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       title: 'Government Health APIs',
       description: 'Integration with national health information systems',
       features: ['Hospital verification', 'Compliance monitoring', 'Public health data', 'Emergency coordination'],
       status: 'Planned',
-      icon: Globe
+      icon: Globe,
+      image: 'https://images.pexels.com/photos/236380/pexels-photo-236380.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     },
     {
       title: 'AI & Machine Learning',
       description: 'Intelligent predictions and resource optimization',
       features: ['Demand forecasting', 'Resource allocation', 'Emergency response optimization', 'Predictive analytics'],
       status: 'Research Phase',
-      icon: Bot
+      icon: Bot,
+      image: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop'
     }
   ];
 
@@ -130,9 +138,16 @@ export const TechnologyPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hero Section with Tech Background */}
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-16 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <img 
+            src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop" 
+            alt="Technology background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
             <Cpu className="h-16 w-16 mx-auto mb-6 text-blue-200" />
             <h1 className="text-5xl font-bold mb-6">Technology & Innovation</h1>
@@ -144,7 +159,7 @@ export const TechnologyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Technology Stack */}
+      {/* Technology Stack with Images */}
       <div className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -156,20 +171,25 @@ export const TechnologyPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {techStack.map((stack, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg p-6">
-                <div className="flex items-center mb-6">
-                  <div className="bg-blue-100 p-3 rounded-lg mr-4">
-                    <stack.icon className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900">{stack.category}</h3>
+              <div key={index} className="bg-white rounded-xl shadow-lg p-6 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5">
+                  <img src={stack.image} alt={stack.category} className="w-full h-full object-cover" />
                 </div>
-                <div className="space-y-4">
-                  {stack.technologies.map((tech, techIndex) => (
-                    <div key={techIndex} className="border-l-4 border-blue-200 pl-4">
-                      <h4 className="font-semibold text-gray-900">{tech.name}</h4>
-                      <p className="text-sm text-gray-600">{tech.description}</p>
+                <div className="relative z-10">
+                  <div className="flex items-center mb-6">
+                    <div className="bg-blue-100 p-3 rounded-lg mr-4">
+                      <stack.icon className="h-8 w-8 text-blue-600" />
                     </div>
-                  ))}
+                    <h3 className="text-xl font-bold text-gray-900">{stack.category}</h3>
+                  </div>
+                  <div className="space-y-4">
+                    {stack.technologies.map((tech, techIndex) => (
+                      <div key={techIndex} className="border-l-4 border-blue-200 pl-4">
+                        <h4 className="font-semibold text-gray-900">{tech.name}</h4>
+                        <p className="text-sm text-gray-600">{tech.description}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -177,7 +197,7 @@ export const TechnologyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* System Architecture */}
+      {/* System Architecture with Background */}
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -189,8 +209,15 @@ export const TechnologyPage: React.FC = () => {
 
           <div className="space-y-4">
             {architecture.map((layer, index) => (
-              <div key={index} className={`${layer.color} border-2 rounded-xl p-6`}>
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+              <div key={index} className={`${layer.color} border-2 rounded-xl p-6 relative overflow-hidden`}>
+                <div className="absolute inset-0 opacity-5">
+                  <img 
+                    src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=1200&h=200&fit=crop" 
+                    alt="Architecture layer" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between relative z-10">
                   <div className="mb-4 lg:mb-0">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">{layer.layer}</h3>
                     <p className="text-gray-700">{layer.description}</p>
@@ -209,7 +236,7 @@ export const TechnologyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Integrations */}
+      {/* Integrations with Images */}
       <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -221,31 +248,36 @@ export const TechnologyPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {integrations.map((integration, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center">
-                    <div className="bg-blue-100 p-3 rounded-lg mr-4">
-                      <integration.icon className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900">{integration.title}</h3>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    integration.status === 'Active' ? 'bg-green-100 text-green-800' :
-                    integration.status === 'In Development' ? 'bg-yellow-100 text-yellow-800' :
-                    integration.status === 'Planned' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {integration.status}
-                  </span>
+              <div key={index} className="bg-white rounded-xl shadow-lg p-6 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5">
+                  <img src={integration.image} alt={integration.title} className="w-full h-full object-cover" />
                 </div>
-                <p className="text-gray-600 mb-4">{integration.description}</p>
-                <div className="space-y-2">
-                  {integration.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-center text-sm text-gray-600">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></div>
-                      {feature}
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <div className="bg-blue-100 p-3 rounded-lg mr-4">
+                        <integration.icon className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900">{integration.title}</h3>
                     </div>
-                  ))}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      integration.status === 'Active' ? 'bg-green-100 text-green-800' :
+                      integration.status === 'In Development' ? 'bg-yellow-100 text-yellow-800' :
+                      integration.status === 'Planned' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {integration.status}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 mb-4">{integration.description}</p>
+                  <div className="space-y-2">
+                    {integration.features.map((feature, featureIndex) => (
+                      <div key={featureIndex} className="flex items-center text-sm text-gray-600">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></div>
+                        {feature}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -253,7 +285,7 @@ export const TechnologyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Security & Compliance */}
+      {/* Security & Compliance with Background */}
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -264,26 +296,31 @@ export const TechnologyPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-gray-50 rounded-xl p-6 text-center">
-              <Lock className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Data Encryption</h3>
-              <p className="text-gray-600 text-sm">End-to-end encryption for all data in transit and at rest</p>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-6 text-center">
-              <Shield className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-gray-900 mb-2">HIPAA Compliance</h3>
-              <p className="text-gray-600 text-sm">Full compliance with healthcare data protection regulations</p>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-6 text-center">
-              <Zap className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Real-time Monitoring</h3>
-              <p className="text-gray-600 text-sm">24/7 security monitoring and threat detection</p>
-            </div>
+            {[
+              { icon: Lock, title: 'Data Encryption', description: 'End-to-end encryption for all data in transit and at rest' },
+              { icon: Shield, title: 'HIPAA Compliance', description: 'Full compliance with healthcare data protection regulations' },
+              { icon: Zap, title: 'Real-time Monitoring', description: '24/7 security monitoring and threat detection' }
+            ].map((security, index) => (
+              <div key={index} className="bg-gray-50 rounded-xl p-6 text-center relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5">
+                  <img 
+                    src="https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop" 
+                    alt="Security feature" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="relative z-10">
+                  <security.icon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{security.title}</h3>
+                  <p className="text-gray-600 text-sm">{security.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Future Roadmap */}
+      {/* Future Roadmap with Background */}
       <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -295,15 +332,24 @@ export const TechnologyPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {futureRoadmap.map((phase, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">{phase.phase}</h3>
-                <div className="space-y-3">
-                  {phase.items.map((item, itemIndex) => (
-                    <div key={itemIndex} className="flex items-start space-x-2">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm text-gray-600">{item}</p>
-                    </div>
-                  ))}
+              <div key={index} className="bg-white rounded-xl shadow-lg p-6 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5">
+                  <img 
+                    src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=300&h=400&fit=crop" 
+                    alt="Roadmap phase" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="relative z-10">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">{phase.phase}</h3>
+                  <div className="space-y-3">
+                    {phase.items.map((item, itemIndex) => (
+                      <div key={itemIndex} className="flex items-start space-x-2">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm text-gray-600">{item}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -311,9 +357,16 @@ export const TechnologyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div className="py-16 bg-gradient-to-r from-blue-600 to-indigo-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Call to Action with Background */}
+      <div className="py-16 bg-gradient-to-r from-blue-600 to-indigo-700 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <img 
+            src="https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=1200&h=400&fit=crop" 
+            alt="Technology call to action" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="text-3xl font-bold text-white mb-4">Interested in Our Technology?</h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
             Learn more about our technical implementation, contribute to our open-source components, 
