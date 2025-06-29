@@ -1,52 +1,82 @@
 import { HospitalProfile, BedAvailability } from '../types/hospital';
 
-// Focus on user's likely location (India) with realistic distribution
-const INDIAN_CITIES = [
-  // Major metros with higher hospital density
-  { name: 'Mumbai', state: 'Maharashtra', lat: 19.0760, lng: 72.8777, pincode: '400001', weight: 15 },
-  { name: 'Delhi', state: 'Delhi', lat: 28.7041, lng: 77.1025, pincode: '110001', weight: 15 },
-  { name: 'Bangalore', state: 'Karnataka', lat: 12.9716, lng: 77.5946, pincode: '560001', weight: 12 },
-  { name: 'Pune', state: 'Maharashtra', lat: 18.5204, lng: 73.8567, pincode: '411001', weight: 10 },
-  { name: 'Hyderabad', state: 'Telangana', lat: 17.3850, lng: 78.4867, pincode: '500001', weight: 10 },
-  { name: 'Chennai', state: 'Tamil Nadu', lat: 13.0827, lng: 80.2707, pincode: '600001', weight: 10 },
-  { name: 'Kolkata', state: 'West Bengal', lat: 22.5726, lng: 88.3639, pincode: '700001', weight: 8 },
-  { name: 'Ahmedabad', state: 'Gujarat', lat: 23.0225, lng: 72.5714, pincode: '380001', weight: 6 },
-  { name: 'Jaipur', state: 'Rajasthan', lat: 26.9124, lng: 75.7873, pincode: '302001', weight: 5 },
-  { name: 'Surat', state: 'Gujarat', lat: 21.1702, lng: 72.8311, pincode: '395001', weight: 4 },
-  { name: 'Lucknow', state: 'Uttar Pradesh', lat: 26.8467, lng: 80.9462, pincode: '226001', weight: 3 },
-  { name: 'Kanpur', state: 'Uttar Pradesh', lat: 26.4499, lng: 80.3319, pincode: '208001', weight: 2 }
+// Focus specifically on Pune and surrounding areas
+const PUNE_AREAS = [
+  // Central Pune
+  { name: 'Pune', area: 'Shivajinagar', lat: 18.5304, lng: 73.8567, pincode: '411005', weight: 8 },
+  { name: 'Pune', area: 'Camp', lat: 18.5074, lng: 73.8477, pincode: '411001', weight: 7 },
+  { name: 'Pune', area: 'Deccan', lat: 18.5158, lng: 73.8449, pincode: '411004', weight: 6 },
+  { name: 'Pune', area: 'Sadashiv Peth', lat: 18.5074, lng: 73.8477, pincode: '411030', weight: 6 },
+  
+  // East Pune
+  { name: 'Pune', area: 'Kharadi', lat: 18.5515, lng: 73.9370, pincode: '411014', weight: 8 },
+  { name: 'Pune', area: 'Hadapsar', lat: 18.5089, lng: 73.9260, pincode: '411013', weight: 7 },
+  { name: 'Pune', area: 'Magarpatta', lat: 18.5089, lng: 73.9260, pincode: '411028', weight: 6 },
+  { name: 'Pune', area: 'Koregaon Park', lat: 18.5362, lng: 73.8958, pincode: '411001', weight: 5 },
+  
+  // West Pune
+  { name: 'Pune', area: 'Baner', lat: 18.5590, lng: 73.7850, pincode: '411045', weight: 8 },
+  { name: 'Pune', area: 'Aundh', lat: 18.5679, lng: 73.8106, pincode: '411007', weight: 7 },
+  { name: 'Pune', area: 'Hinjewadi', lat: 18.5912, lng: 73.7389, pincode: '411057', weight: 6 },
+  { name: 'Pune', area: 'Wakad', lat: 18.5975, lng: 73.7898, pincode: '411057', weight: 5 },
+  
+  // North Pune
+  { name: 'Pune', area: 'Pimpri', lat: 18.6298, lng: 73.8131, pincode: '411018', weight: 7 },
+  { name: 'Pune', area: 'Chinchwad', lat: 18.6298, lng: 73.8131, pincode: '411033', weight: 6 },
+  { name: 'Pune', area: 'Akurdi', lat: 18.6476, lng: 73.7693, pincode: '411035', weight: 4 },
+  
+  // South Pune
+  { name: 'Pune', area: 'Katraj', lat: 18.4583, lng: 73.8648, pincode: '411046', weight: 6 },
+  { name: 'Pune', area: 'Kondhwa', lat: 18.4636, lng: 73.8925, pincode: '411048', weight: 5 },
+  { name: 'Pune', area: 'Warje', lat: 18.4816, lng: 73.8053, pincode: '411058', weight: 4 },
+  { name: 'Pune', area: 'Bibwewadi', lat: 18.4816, lng: 73.8653, pincode: '411037', weight: 4 },
+  
+  // Nearby cities within 50km
+  { name: 'Pimpri-Chinchwad', area: 'Pimpri-Chinchwad', lat: 18.6298, lng: 73.8131, pincode: '411018', weight: 5 },
+  { name: 'Talegaon', area: 'Talegaon Dabhade', lat: 18.7351, lng: 73.6758, pincode: '410507', weight: 3 },
+  { name: 'Lonavala', area: 'Lonavala', lat: 18.7537, lng: 73.4068, pincode: '410401', weight: 2 },
+  { name: 'Chakan', area: 'Chakan', lat: 18.7606, lng: 73.8636, pincode: '410501', weight: 3 },
+  { name: 'Dehu Road', area: 'Dehu Road', lat: 18.7219, lng: 73.7619, pincode: '412101', weight: 2 }
 ];
 
-const HOSPITAL_NAMES = [
-  'Apollo Hospital',
-  'Fortis Healthcare',
-  'Max Healthcare',
-  'Manipal Hospital',
-  'AIIMS',
-  'Medanta',
-  'Narayana Health',
-  'Columbia Asia',
-  'Aster Hospitals',
-  'Kokilaben Hospital',
-  'Lilavati Hospital',
-  'Breach Candy Hospital',
-  'Jaslok Hospital',
-  'Hinduja Hospital',
+const PUNE_HOSPITAL_NAMES = [
+  // Real major hospitals in Pune
   'Ruby Hall Clinic',
   'Jehangir Hospital',
   'KEM Hospital',
+  'Sassoon General Hospital',
+  'Deenanath Mangeshkar Hospital',
   'Sahyadri Hospital',
   'Noble Hospital',
-  'City Hospital',
-  'General Hospital',
+  'Sancheti Hospital',
+  'Poona Hospital',
+  'Bharati Hospital',
+  'Aditya Birla Memorial Hospital',
+  'Columbia Asia Hospital',
+  'Manipal Hospital',
+  'Jupiter Hospital',
+  'Fortis Hospital',
+  'Apollo Hospital',
+  'Max Healthcare',
+  'Narayana Health',
+  'Aster Hospital',
+  'Symbiosis Hospital',
+  
+  // Generic hospital names for variety
+  'City General Hospital',
   'Medical Center',
   'Specialty Hospital',
   'Multi-Specialty Hospital',
-  'Community Hospital'
+  'Community Hospital',
+  'Emergency Hospital',
+  'Trauma Center',
+  'Healthcare Center',
+  'Medical Institute',
+  'Wellness Hospital'
 ];
 
-// Generate hospitals in clusters around cities for realistic distribution
-const generateNearbyCoordinates = (centerLat: number, centerLng: number, radiusKm: number = 30) => {
+// Generate coordinates within a specific area radius
+const generateNearbyCoordinates = (centerLat: number, centerLng: number, radiusKm: number = 5) => {
   const radiusInDegrees = radiusKm / 111; // Rough conversion
   const angle = Math.random() * 2 * Math.PI;
   const distance = Math.random() * radiusInDegrees;
@@ -57,95 +87,106 @@ const generateNearbyCoordinates = (centerLat: number, centerLng: number, radiusK
   };
 };
 
-// Generate realistic bed capacity based on hospital size
-const generateBedCapacity = (hospitalSize: 'small' | 'medium' | 'large') => {
+// Generate realistic bed capacity based on hospital size and area
+const generateBedCapacity = (hospitalSize: 'small' | 'medium' | 'large', area: string) => {
+  // Major areas get larger hospitals
+  const areaMultiplier = ['Shivajinagar', 'Camp', 'Kharadi', 'Baner', 'Hadapsar'].includes(area) ? 1.3 : 1.0;
+  
   const multipliers = {
-    small: { min: 0.3, max: 0.6 },
-    medium: { min: 0.6, max: 1.2 },
-    large: { min: 1.2, max: 2.0 }
+    small: { min: 0.4, max: 0.7 },
+    medium: { min: 0.7, max: 1.3 },
+    large: { min: 1.3, max: 2.2 }
   };
   
   const mult = multipliers[hospitalSize];
-  const factor = mult.min + Math.random() * (mult.max - mult.min);
+  const factor = (mult.min + Math.random() * (mult.max - mult.min)) * areaMultiplier;
   
   return {
-    icuBeds: Math.floor((20 + Math.random() * 40) * factor),
-    generalBeds: Math.floor((100 + Math.random() * 200) * factor),
-    oxygenBeds: Math.floor((30 + Math.random() * 60) * factor),
-    ventilators: Math.floor((10 + Math.random() * 25) * factor),
-    ambulances: Math.floor((3 + Math.random() * 8) * factor)
+    icuBeds: Math.floor((15 + Math.random() * 35) * factor),
+    generalBeds: Math.floor((80 + Math.random() * 150) * factor),
+    oxygenBeds: Math.floor((25 + Math.random() * 45) * factor),
+    ventilators: Math.floor((8 + Math.random() * 20) * factor),
+    ambulances: Math.floor((2 + Math.random() * 6) * factor)
   };
 };
 
-// Generate realistic availability (usually 10-40% available)
+// Generate realistic availability (usually 15-45% available)
 const generateAvailability = (total: number) => {
-  const availabilityRate = 0.1 + Math.random() * 0.3; // 10-40%
+  const availabilityRate = 0.15 + Math.random() * 0.3; // 15-45%
   return Math.floor(total * availabilityRate);
 };
 
-// Generate phone number
-const generatePhoneNumber = (cityCode: string) => {
+// Generate phone number with Pune area codes
+const generatePhoneNumber = () => {
+  const areaCodes = ['20', '20', '20', '20', '2135', '2137']; // Pune area codes
+  const areaCode = areaCodes[Math.floor(Math.random() * areaCodes.length)];
   const numbers = Math.floor(1000000 + Math.random() * 9000000);
-  return `+91-${cityCode}-${numbers.toString().substring(0, 4)}-${numbers.toString().substring(4)}`;
+  return `+91-${areaCode}-${numbers.toString().substring(0, 4)}-${numbers.toString().substring(4)}`;
 };
 
 // Generate registration number
-const generateRegistrationNumber = (state: string, year: number = 2023) => {
-  const stateCode = state.substring(0, 2).toUpperCase();
+const generateRegistrationNumber = (year: number = 2023) => {
   const number = Math.floor(10000 + Math.random() * 90000);
-  return `${stateCode}/${number}/${year}`;
+  return `MH/${number}/${year}`;
 };
 
-// Weighted city selection for realistic distribution
-const selectWeightedCity = () => {
-  const totalWeight = INDIAN_CITIES.reduce((sum, city) => sum + city.weight, 0);
+// Weighted area selection for realistic distribution
+const selectWeightedArea = () => {
+  const totalWeight = PUNE_AREAS.reduce((sum, area) => sum + area.weight, 0);
   let random = Math.random() * totalWeight;
   
-  for (const city of INDIAN_CITIES) {
-    random -= city.weight;
+  for (const area of PUNE_AREAS) {
+    random -= area.weight;
     if (random <= 0) {
-      return city;
+      return area;
     }
   }
   
-  return INDIAN_CITIES[0]; // Fallback
+  return PUNE_AREAS[0]; // Fallback
 };
 
 export const generateSampleHospitals = (count: number = 100): HospitalProfile[] => {
   const hospitals: HospitalProfile[] = [];
   
   for (let i = 0; i < count; i++) {
-    const city = selectWeightedCity();
-    const hospitalName = HOSPITAL_NAMES[Math.floor(Math.random() * HOSPITAL_NAMES.length)];
+    const area = selectWeightArea();
+    const hospitalName = PUNE_HOSPITAL_NAMES[Math.floor(Math.random() * PUNE_HOSPITAL_NAMES.length)];
     
-    // Generate location within city radius (closer to city center for more realistic distribution)
-    const maxRadius = Math.random() < 0.7 ? 15 : 30; // 70% within 15km, 30% within 30km
-    const location = generateNearbyCoordinates(city.lat, city.lng, maxRadius);
+    // Generate location within area radius (most within 3km, some up to 8km)
+    const maxRadius = Math.random() < 0.8 ? 3 : 8;
+    const location = generateNearbyCoordinates(area.lat, area.lng, maxRadius);
     
     // Generate unique pincode variations
-    const basePincode = parseInt(city.pincode);
-    const pincodeVariation = Math.floor(Math.random() * 50);
+    const basePincode = parseInt(area.pincode);
+    const pincodeVariation = Math.floor(Math.random() * 20);
     const pincode = (basePincode + pincodeVariation).toString();
     
-    // Generate area names for more realistic addresses
-    const areas = ['Medical District', 'Health Zone', 'Hospital Road', 'Medical Campus', 'Healthcare Complex'];
-    const area = areas[Math.floor(Math.random() * areas.length)];
+    // Generate realistic addresses
+    const streetNumbers = [
+      Math.floor(Math.random() * 999) + 1,
+      `${Math.floor(Math.random() * 99) + 1}/${Math.floor(Math.random() * 99) + 1}`,
+      `${Math.floor(Math.random() * 999) + 1}-${Math.floor(Math.random() * 999) + 1}`
+    ];
+    const streetNumber = streetNumbers[Math.floor(Math.random() * streetNumbers.length)];
+    
+    const roadTypes = ['Road', 'Street', 'Lane', 'Marg', 'Path', 'Circle', 'Square'];
+    const roadType = roadTypes[Math.floor(Math.random() * roadTypes.length)];
     
     const hospital: HospitalProfile = {
-      id: `hospital_${i + 1}`,
-      name: `${hospitalName} - ${city.name}${i % 3 === 0 ? ` Branch ${Math.floor(i/3) + 1}` : ''}`,
-      address: `${Math.floor(Math.random() * 999) + 1}, ${area}, ${city.name}, ${city.state} ${pincode}`,
-      city: city.name,
-      state: city.state,
+      id: `pune_hospital_${i + 1}`,
+      name: `${hospitalName}${i % 4 === 0 ? ` - ${area.area}` : ''}`,
+      address: `${streetNumber}, Medical ${roadType}, ${area.area}, ${area.name}, Maharashtra ${pincode}`,
+      city: area.name,
+      state: 'Maharashtra',
       pincode: pincode,
-      phone: generatePhoneNumber('20'),
-      email: `admin@${hospitalName.toLowerCase().replace(/\s+/g, '')}-${city.name.toLowerCase()}.com`,
-      registrationNumber: generateRegistrationNumber(city.state),
+      phone: generatePhoneNumber(),
+      email: `admin@${hospitalName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')}-${area.area.toLowerCase().replace(/\s+/g, '')}.com`,
+      registrationNumber: generateRegistrationNumber(),
       location,
       createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
       updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-      isVerified: Math.random() > 0.2, // 80% verified
-      adminUserId: `user_${i + 1}`
+      isVerified: Math.random() > 0.15, // 85% verified (higher for Pune)
+      adminUserId: `pune_admin_${i + 1}`
     };
     
     hospitals.push(hospital);
@@ -156,11 +197,16 @@ export const generateSampleHospitals = (count: number = 100): HospitalProfile[] 
 
 export const generateSampleAvailability = (hospitals: HospitalProfile[]): BedAvailability[] => {
   return hospitals.map(hospital => {
-    const hospitalSize = Math.random() < 0.3 ? 'large' : Math.random() < 0.6 ? 'medium' : 'small';
-    const capacity = generateBedCapacity(hospitalSize);
+    // Determine hospital size based on name and area
+    const isLargeHospital = ['Ruby Hall', 'Jehangir', 'KEM', 'Sassoon', 'Deenanath', 'Sahyadri', 'Aditya Birla', 'Columbia Asia', 'Manipal', 'Jupiter'].some(name => hospital.name.includes(name));
+    const isMediumHospital = ['Noble', 'Sancheti', 'Poona', 'Bharati', 'Fortis', 'Apollo', 'Max', 'Narayana', 'Aster'].some(name => hospital.name.includes(name));
+    
+    const hospitalSize = isLargeHospital ? 'large' : isMediumHospital ? 'medium' : 'small';
+    const area = hospital.address.split(',')[1]?.trim() || 'Pune';
+    const capacity = generateBedCapacity(hospitalSize, area);
     
     const availability: BedAvailability = {
-      id: `availability_${hospital.id}`,
+      id: `pune_availability_${hospital.id}`,
       hospitalId: hospital.id,
       icuBeds: {
         total: capacity.icuBeds,
@@ -212,9 +258,9 @@ export const generateHistoricalTrends = (hospitalId: string, days: number = 30) 
     
     // Simulate daily patterns (higher occupancy during day, lower at night)
     const hour = date.getHours();
-    const baseOccupancy = 0.6 + 0.2 * Math.sin((hour - 6) * Math.PI / 12);
+    const baseOccupancy = 0.65 + 0.2 * Math.sin((hour - 6) * Math.PI / 12);
     const randomVariation = 0.9 + Math.random() * 0.2;
-    const occupancyRate = Math.min(0.95, Math.max(0.3, baseOccupancy * randomVariation));
+    const occupancyRate = Math.min(0.95, Math.max(0.35, baseOccupancy * randomVariation));
     
     trends.push({
       date: date.toISOString(),
