@@ -1,15 +1,5 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  sendEmailVerification,
-  updateProfile,
-  User,
-  onAuthStateChanged
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { supabase } from '../config/supabase';
+import { User, Session } from '@supabase/supabase-js';
 import { HospitalUser } from '../types/hospital';
 
 export class AuthService {
@@ -20,32 +10,38 @@ export class AuthService {
     hospitalData?: any
   ): Promise<User> {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            display_name: displayName,
+            role: 'admin'
+          }
+        }
+      });
 
-      // Update user profile
-      await updateProfile(user, { displayName });
+      if (error) throw error;
+      if (!data.user) throw new Error('Failed to create user');
 
-      // Send email verification
-      await sendEmailVerification(user);
-
-      // Create user document in Firestore
-      const userData: HospitalUser = {
-        uid: user.uid,
-        email: user.email!,
+      // Create user profile in database
+      const userData: Omit<HospitalUser, 'uid'> = {
+        email: data.user.email!,
         role: 'admin',
         displayName,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString()
       };
 
-      await setDoc(doc(db, 'users', user.uid), {
-        ...userData,
-        createdAt: serverTimestamp(),
-        lastLogin: serverTimestamp()
-      });
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert([{ ...userData, uid: data.user.id }]);
 
-      return user;
+      if (profileError) {
+        console.error('Error creating user profile:', profileError);
+      }
+
+      return data.user;
     } catch (error) {
       console.error('Error registering hospital:', error);
       throw error;
@@ -54,15 +50,21 @@ export class AuthService {
 
   static async signIn(email: string, password: string): Promise<User> {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Update last login
-      await updateDoc(doc(db, 'users', user.uid), {
-        lastLogin: serverTimestamp()
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
 
-      return user;
+      if (error) throw error;
+      if (!data.user) throw new Error('Failed to sign in');
+
+      // Update last login
+      await supabase
+        .from('users')
+        .update({ lastLogin: new Date().toISOString() })
+        .eq('uid', data.user.id);
+
+      return data.user;
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;
@@ -71,7 +73,8 @@ export class AuthService {
 
   static async signOut(): Promise<void> {
     try {
-      await signOut(auth);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
     } catch (error) {
       console.error('Error signing out:', error);
       throw error;
@@ -80,7 +83,8 @@ export class AuthService {
 
   static async resetPassword(email: string): Promise<void> {
     try {
-      await sendPasswordResetEmail(auth, email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
     } catch (error) {
       console.error('Error sending password reset email:', error);
       throw error;
@@ -89,27 +93,35 @@ export class AuthService {
 
   static async getUserData(uid: string): Promise<HospitalUser | null> {
     try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        return {
-          ...data,
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-          lastLogin: data.lastLogin?.toDate?.()?.toISOString() || new Date().toISOString()
-        } as HospitalUser;
-      }
-      return null;
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('uid', uid)
+        .single();
+
+      if (error) throw error;
+      return data as HospitalUser;
     } catch (error) {
       console.error('Error getting user data:', error);
-      throw error;
+      return null;
     }
   }
 
   static onAuthStateChanged(callback: (user: User | null) => void): () => void {
-    return onAuthStateChanged(auth, callback);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      callback(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
   }
 
   static getCurrentUser(): User | null {
-    return auth.currentUser;
+    const { data: { user } } = supabase.auth.getUser();
+    return user;
+  }
+
+  static async getCurrentSession(): Promise<Session | null> {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session;
   }
 }

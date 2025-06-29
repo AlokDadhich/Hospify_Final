@@ -1,34 +1,22 @@
-import {
-  collection,
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getDocs,
-  getDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  onSnapshot,
-  serverTimestamp,
-  GeoPoint,
-  Timestamp
-} from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { supabase } from '../config/supabase';
 import { HospitalProfile, BedAvailability, HistoricalLog, AmbulanceTracking } from '../types/hospital';
 
 export class HospitalService {
   // Hospital Profile Management
   static async createHospitalProfile(hospitalData: Omit<HospitalProfile, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     try {
-      const docRef = await addDoc(collection(db, 'hospitals'), {
-        ...hospitalData,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        location: new GeoPoint(hospitalData.location.latitude, hospitalData.location.longitude)
-      });
-      return docRef.id;
+      const { data, error } = await supabase
+        .from('hospitals')
+        .insert([{
+          ...hospitalData,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data.id;
     } catch (error) {
       console.error('Error creating hospital profile:', error);
       throw error;
@@ -37,14 +25,15 @@ export class HospitalService {
 
   static async updateHospitalProfile(hospitalId: string, updates: Partial<HospitalProfile>): Promise<void> {
     try {
-      const hospitalRef = doc(db, 'hospitals', hospitalId);
-      await updateDoc(hospitalRef, {
-        ...updates,
-        updatedAt: serverTimestamp(),
-        ...(updates.location && {
-          location: new GeoPoint(updates.location.latitude, updates.location.longitude)
+      const { error } = await supabase
+        .from('hospitals')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
         })
-      });
+        .eq('id', hospitalId);
+
+      if (error) throw error;
     } catch (error) {
       console.error('Error updating hospital profile:', error);
       throw error;
@@ -53,112 +42,156 @@ export class HospitalService {
 
   static async getHospitalProfile(hospitalId: string): Promise<HospitalProfile | null> {
     try {
-      const hospitalDoc = await getDoc(doc(db, 'hospitals', hospitalId));
-      if (hospitalDoc.exists()) {
-        const data = hospitalDoc.data();
-        return {
-          id: hospitalDoc.id,
-          ...data,
-          location: {
-            latitude: data.location.latitude,
-            longitude: data.location.longitude
-          },
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-          updatedAt: data.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString()
-        } as HospitalProfile;
-      }
-      return null;
+      const { data, error } = await supabase
+        .from('hospitals')
+        .select('*')
+        .eq('id', hospitalId)
+        .single();
+
+      if (error) throw error;
+      
+      return {
+        ...data,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      } as HospitalProfile;
     } catch (error) {
       console.error('Error getting hospital profile:', error);
-      throw error;
+      return null;
     }
   }
 
   static async getAllHospitals(): Promise<HospitalProfile[]> {
     try {
-      const hospitalsSnapshot = await getDocs(collection(db, 'hospitals'));
-      return hospitalsSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          location: {
-            latitude: data.location.latitude,
-            longitude: data.location.longitude
-          },
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-          updatedAt: data.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString()
-        } as HospitalProfile;
-      });
+      const { data, error } = await supabase
+        .from('hospitals')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      
+      return (data || []).map(hospital => ({
+        ...hospital,
+        createdAt: hospital.created_at,
+        updatedAt: hospital.updated_at
+      })) as HospitalProfile[];
     } catch (error) {
       console.error('Error getting all hospitals:', error);
-      throw error;
+      return [];
     }
   }
 
   // Bed Availability Management
   static async updateBedAvailability(availabilityData: Omit<BedAvailability, 'id' | 'lastUpdated'>): Promise<void> {
     try {
-      const availabilityRef = doc(db, 'bedAvailability', availabilityData.hospitalId);
-      await updateDoc(availabilityRef, {
-        ...availabilityData,
-        lastUpdated: serverTimestamp()
-      });
-    } catch (error) {
-      // If document doesn't exist, create it
-      try {
-        await addDoc(collection(db, 'bedAvailability'), {
-          ...availabilityData,
-          lastUpdated: serverTimestamp()
+      const { error } = await supabase
+        .from('bed_availability')
+        .upsert([{
+          hospital_id: availabilityData.hospitalId,
+          icu_beds: availabilityData.icuBeds,
+          general_beds: availabilityData.generalBeds,
+          oxygen_beds: availabilityData.oxygenBeds,
+          ventilators: availabilityData.ventilators,
+          ambulances: availabilityData.ambulances,
+          last_updated: new Date().toISOString(),
+          updated_by: availabilityData.updatedBy
+        }], {
+          onConflict: 'hospital_id'
         });
-      } catch (createError) {
-        console.error('Error creating bed availability:', createError);
-        throw createError;
-      }
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating bed availability:', error);
+      throw error;
     }
   }
 
   static async getBedAvailability(hospitalId: string): Promise<BedAvailability | null> {
     try {
-      const availabilityDoc = await getDoc(doc(db, 'bedAvailability', hospitalId));
-      if (availabilityDoc.exists()) {
-        const data = availabilityDoc.data();
-        return {
-          id: availabilityDoc.id,
-          ...data,
-          lastUpdated: data.lastUpdated?.toDate?.()?.toISOString() || new Date().toISOString()
-        } as BedAvailability;
-      }
-      return null;
+      const { data, error } = await supabase
+        .from('bed_availability')
+        .select('*')
+        .eq('hospital_id', hospitalId)
+        .single();
+
+      if (error) throw error;
+      
+      return {
+        id: data.id,
+        hospitalId: data.hospital_id,
+        icuBeds: data.icu_beds,
+        generalBeds: data.general_beds,
+        oxygenBeds: data.oxygen_beds,
+        ventilators: data.ventilators,
+        ambulances: data.ambulances,
+        lastUpdated: data.last_updated,
+        updatedBy: data.updated_by
+      } as BedAvailability;
     } catch (error) {
       console.error('Error getting bed availability:', error);
-      throw error;
+      return null;
     }
   }
 
   static subscribeToAllBedAvailability(callback: (availability: BedAvailability[]) => void): () => void {
-    const q = query(collection(db, 'bedAvailability'), orderBy('lastUpdated', 'desc'));
-    
-    return onSnapshot(q, (snapshot) => {
-      const availability = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          lastUpdated: data.lastUpdated?.toDate?.()?.toISOString() || new Date().toISOString()
-        } as BedAvailability;
-      });
-      callback(availability);
-    });
+    const subscription = supabase
+      .from('bed_availability')
+      .on('*', (payload) => {
+        // Refetch all data when any change occurs
+        this.getAllBedAvailability().then(callback);
+      })
+      .subscribe();
+
+    // Initial fetch
+    this.getAllBedAvailability().then(callback);
+
+    return () => {
+      supabase.removeSubscription(subscription);
+    };
+  }
+
+  static async getAllBedAvailability(): Promise<BedAvailability[]> {
+    try {
+      const { data, error } = await supabase
+        .from('bed_availability')
+        .select('*')
+        .order('last_updated', { ascending: false });
+
+      if (error) throw error;
+      
+      return (data || []).map(item => ({
+        id: item.id,
+        hospitalId: item.hospital_id,
+        icuBeds: item.icu_beds,
+        generalBeds: item.general_beds,
+        oxygenBeds: item.oxygen_beds,
+        ventilators: item.ventilators,
+        ambulances: item.ambulances,
+        lastUpdated: item.last_updated,
+        updatedBy: item.updated_by
+      })) as BedAvailability[];
+    } catch (error) {
+      console.error('Error getting all bed availability:', error);
+      return [];
+    }
   }
 
   // Historical Logging
   static async logResourceChange(logData: Omit<HistoricalLog, 'id' | 'timestamp'>): Promise<void> {
     try {
-      await addDoc(collection(db, 'historicalLogs'), {
-        ...logData,
-        timestamp: serverTimestamp()
-      });
+      const { error } = await supabase
+        .from('historical_logs')
+        .insert([{
+          hospital_id: logData.hospitalId,
+          resource_type: logData.resourceType,
+          previous_value: logData.previousValue,
+          new_value: logData.newValue,
+          updated_by: logData.updatedBy,
+          action: logData.action,
+          timestamp: new Date().toISOString()
+        }]);
+
+      if (error) throw error;
     } catch (error) {
       console.error('Error logging resource change:', error);
       throw error;
@@ -170,86 +203,78 @@ export class HospitalService {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
       
-      const q = query(
-        collection(db, 'historicalLogs'),
-        where('hospitalId', '==', hospitalId),
-        where('timestamp', '>=', Timestamp.fromDate(cutoffDate)),
-        orderBy('timestamp', 'desc'),
-        limit(100)
-      );
+      const { data, error } = await supabase
+        .from('historical_logs')
+        .select('*')
+        .eq('hospital_id', hospitalId)
+        .gte('timestamp', cutoffDate.toISOString())
+        .order('timestamp', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
       
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          timestamp: data.timestamp?.toDate?.()?.toISOString() || new Date().toISOString()
-        } as HistoricalLog;
-      });
+      return (data || []).map(item => ({
+        id: item.id,
+        hospitalId: item.hospital_id,
+        resourceType: item.resource_type,
+        previousValue: item.previous_value,
+        newValue: item.new_value,
+        updatedBy: item.updated_by,
+        action: item.action,
+        timestamp: item.timestamp
+      })) as HistoricalLog[];
     } catch (error) {
       console.error('Error getting hospital history:', error);
-      throw error;
+      return [];
     }
   }
 
   // Ambulance Tracking
   static async updateAmbulanceStatus(ambulanceData: Omit<AmbulanceTracking, 'id' | 'lastUpdated'>): Promise<void> {
     try {
-      const ambulanceRef = doc(db, 'ambulances', `${ambulanceData.hospitalId}_${ambulanceData.vehicleNumber}`);
-      await updateDoc(ambulanceRef, {
-        ...ambulanceData,
-        lastUpdated: serverTimestamp(),
-        ...(ambulanceData.currentLocation && {
-          currentLocation: new GeoPoint(
-            ambulanceData.currentLocation.latitude,
-            ambulanceData.currentLocation.longitude
-          )
-        })
-      });
-    } catch (error) {
-      // If document doesn't exist, create it
-      try {
-        await addDoc(collection(db, 'ambulances'), {
-          ...ambulanceData,
-          lastUpdated: serverTimestamp(),
-          ...(ambulanceData.currentLocation && {
-            currentLocation: new GeoPoint(
-              ambulanceData.currentLocation.latitude,
-              ambulanceData.currentLocation.longitude
-            )
-          })
+      const { error } = await supabase
+        .from('ambulances')
+        .upsert([{
+          hospital_id: ambulanceData.hospitalId,
+          vehicle_number: ambulanceData.vehicleNumber,
+          driver_name: ambulanceData.driverName,
+          driver_phone: ambulanceData.driverPhone,
+          status: ambulanceData.status,
+          current_location: ambulanceData.currentLocation,
+          last_updated: new Date().toISOString()
+        }], {
+          onConflict: 'hospital_id,vehicle_number'
         });
-      } catch (createError) {
-        console.error('Error creating ambulance record:', createError);
-        throw createError;
-      }
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating ambulance status:', error);
+      throw error;
     }
   }
 
   static async getHospitalAmbulances(hospitalId: string): Promise<AmbulanceTracking[]> {
     try {
-      const q = query(
-        collection(db, 'ambulances'),
-        where('hospitalId', '==', hospitalId)
-      );
+      const { data, error } = await supabase
+        .from('ambulances')
+        .select('*')
+        .eq('hospital_id', hospitalId);
+
+      if (error) throw error;
       
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          currentLocation: data.currentLocation ? {
-            latitude: data.currentLocation.latitude,
-            longitude: data.currentLocation.longitude
-          } : undefined,
-          lastUpdated: data.lastUpdated?.toDate?.()?.toISOString() || new Date().toISOString()
-        } as AmbulanceTracking;
-      });
+      return (data || []).map(item => ({
+        id: item.id,
+        hospitalId: item.hospital_id,
+        vehicleNumber: item.vehicle_number,
+        driverName: item.driver_name,
+        driverPhone: item.driver_phone,
+        status: item.status,
+        currentLocation: item.current_location,
+        lastUpdated: item.last_updated
+      })) as AmbulanceTracking[];
     } catch (error) {
       console.error('Error getting hospital ambulances:', error);
-      throw error;
+      return [];
     }
   }
 }
