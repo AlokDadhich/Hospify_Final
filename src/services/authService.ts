@@ -1,70 +1,136 @@
 import { supabase } from '../config/supabase';
 import { User, Session } from '@supabase/supabase-js';
-import { HospitalUser } from '../types/hospital';
+
+interface HospitalRegistrationData {
+  hospitalName: string;
+  location: string;
+  hospitalId: string;
+  password: string;
+}
+
+interface HospitalAuthData {
+  id: string;
+  hospital_id: string;
+  hospital_name: string;
+  location: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+}
 
 export class AuthService {
-  static async registerHospital(
-    email: string,
-    password: string,
-    displayName: string,
-    hospitalData?: any
-  ): Promise<User> {
+  // Simple hash function for demo purposes (in production, use proper bcrypt)
+  private static simpleHash(password: string): string {
+    let hash = 0;
+    for (let i = 0; i < password.length; i++) {
+      const char = password.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  static async registerHospital(data: HospitalRegistrationData): Promise<void> {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+      // Check if hospital ID already exists
+      const { data: existing, error: checkError } = await supabase
+        .from('hospital_auth')
+        .select('hospital_id')
+        .eq('hospital_id', data.hospitalId)
+        .single();
+
+      if (existing) {
+        throw new Error('Hospital ID already exists. Please choose a different ID.');
+      }
+
+      // Hash the password
+      const passwordHash = this.simpleHash(data.password);
+
+      // Insert new hospital
+      const { error } = await supabase
+        .from('hospital_auth')
+        .insert([{
+          hospital_id: data.hospitalId,
+          hospital_name: data.hospitalName,
+          location: data.location,
+          password_hash: passwordHash
+        }]);
+
+      if (error) throw error;
+
+      // Create a Supabase auth user for session management
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: `${data.hospitalId}@hospify.local`,
+        password: data.password,
         options: {
           data: {
-            display_name: displayName,
-            role: 'admin'
+            hospital_id: data.hospitalId,
+            hospital_name: data.hospitalName,
+            location: data.location
           }
         }
       });
 
-      if (error) throw error;
-      if (!data.user) throw new Error('Failed to create user');
-
-      // Create user profile in database
-      const userData: Omit<HospitalUser, 'uid'> = {
-        email: data.user.email!,
-        role: 'admin',
-        displayName,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-      };
-
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert([{ ...userData, uid: data.user.id }]);
-
-      if (profileError) {
-        console.error('Error creating user profile:', profileError);
+      if (authError) {
+        console.warn('Auth user creation failed, but hospital registration succeeded:', authError);
       }
 
-      return data.user;
     } catch (error) {
       console.error('Error registering hospital:', error);
       throw error;
     }
   }
 
-  static async signIn(email: string, password: string): Promise<User> {
+  static async signInHospital(hospitalId: string, password: string): Promise<HospitalAuthData> {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      // Hash the provided password
+      const passwordHash = this.simpleHash(password);
 
-      if (error) throw error;
-      if (!data.user) throw new Error('Failed to sign in');
+      // Check credentials
+      const { data, error } = await supabase
+        .from('hospital_auth')
+        .select('*')
+        .eq('hospital_id', hospitalId)
+        .eq('password_hash', passwordHash)
+        .eq('is_active', true)
+        .single();
 
-      // Update last login
-      await supabase
-        .from('users')
-        .update({ lastLogin: new Date().toISOString() })
-        .eq('uid', data.user.id);
+      if (error || !data) {
+        throw new Error('Invalid hospital ID or password');
+      }
 
-      return data.user;
+      // Try to sign in with Supabase auth for session management
+      try {
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email: `${hospitalId}@hospify.local`,
+          password: password
+        });
+
+        if (authError) {
+          // If auth fails, create the user
+          await supabase.auth.signUp({
+            email: `${hospitalId}@hospify.local`,
+            password: password,
+            options: {
+              data: {
+                hospital_id: hospitalId,
+                hospital_name: data.hospital_name,
+                location: data.location
+              }
+            }
+          });
+          
+          // Try signing in again
+          await supabase.auth.signInWithPassword({
+            email: `${hospitalId}@hospify.local`,
+            password: password
+          });
+        }
+      } catch (authError) {
+        console.warn('Auth session creation failed:', authError);
+      }
+
+      return data;
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;
@@ -81,28 +147,24 @@ export class AuthService {
     }
   }
 
-  static async resetPassword(email: string): Promise<void> {
+  static async getCurrentHospital(): Promise<HospitalAuthData | null> {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error sending password reset email:', error);
-      throw error;
-    }
-  }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
 
-  static async getUserData(uid: string): Promise<HospitalUser | null> {
-    try {
+      const hospitalId = user.user_metadata?.hospital_id;
+      if (!hospitalId) return null;
+
       const { data, error } = await supabase
-        .from('users')
+        .from('hospital_auth')
         .select('*')
-        .eq('uid', uid)
+        .eq('hospital_id', hospitalId)
         .single();
 
-      if (error) throw error;
-      return data as HospitalUser;
+      if (error) return null;
+      return data;
     } catch (error) {
-      console.error('Error getting user data:', error);
+      console.error('Error getting current hospital:', error);
       return null;
     }
   }
@@ -116,12 +178,44 @@ export class AuthService {
   }
 
   static getCurrentUser(): User | null {
-    const { data: { user } } = supabase.auth.getUser();
-    return user;
+    // This is synchronous and might not have the latest data
+    // Use getCurrentSession for async access
+    return null;
   }
 
   static async getCurrentSession(): Promise<Session | null> {
     const { data: { session } } = await supabase.auth.getSession();
     return session;
+  }
+
+  // Legacy methods for backward compatibility
+  static async registerUser(email: string, password: string, displayName: string): Promise<User> {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { display_name: displayName }
+      }
+    });
+
+    if (error) throw error;
+    if (!data.user) throw new Error('Failed to create user');
+    return data.user;
+  }
+
+  static async signIn(email: string, password: string): Promise<User> {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) throw error;
+    if (!data.user) throw new Error('Failed to sign in');
+    return data.user;
+  }
+
+  static async resetPassword(email: string): Promise<void> {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) throw error;
   }
 }

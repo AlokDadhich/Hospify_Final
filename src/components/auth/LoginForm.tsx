@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Building, MapPin, User, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import { AuthService } from '../../services/authService';
 
 interface LoginFormProps {
@@ -9,13 +9,12 @@ interface LoginFormProps {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister }) => {
   const [formData, setFormData] = useState({
-    email: '',
+    hospitalId: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +22,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
     setError('');
 
     try {
-      await AuthService.signIn(formData.email, formData.password);
+      await AuthService.signInHospital(formData.hospitalId, formData.password);
       onSuccess();
     } catch (error: any) {
       setError(error.message || 'Failed to sign in');
@@ -32,24 +31,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
     }
   };
 
-  const handlePasswordReset = async () => {
-    if (!formData.email) {
-      setError('Please enter your email address first');
-      return;
-    }
-
-    try {
-      await AuthService.resetPassword(formData.email);
-      setResetEmailSent(true);
-      setError('');
-    } catch (error: any) {
-      setError(error.message || 'Failed to send reset email');
-    }
-  };
-
   return (
     <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
       <div className="text-center mb-8">
+        <div className="bg-blue-600 p-3 rounded-lg w-fit mx-auto mb-4">
+          <Building className="h-8 w-8 text-white" />
+        </div>
         <h2 className="text-3xl font-bold text-gray-900 mb-2">Hospital Login</h2>
         <p className="text-gray-600">Access your hospital dashboard</p>
       </div>
@@ -61,27 +48,21 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
         </div>
       )}
 
-      {resetEmailSent && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start space-x-3">
-          <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-          <p className="text-green-800 text-sm">Password reset email sent! Check your inbox.</p>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            <Mail className="inline h-4 w-4 mr-1" />
-            Email Address
+            <User className="inline h-4 w-4 mr-1" />
+            Hospital ID
           </label>
           <input
-            type="email"
+            type="text"
             required
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            value={formData.hospitalId}
+            onChange={(e) => setFormData({ ...formData, hospitalId: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="hospital@example.com"
+            placeholder="Enter your hospital ID"
           />
+          <p className="text-xs text-gray-500 mt-1">Use the unique ID provided during registration</p>
         </div>
 
         <div>
@@ -118,13 +99,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
       </form>
 
       <div className="mt-6 text-center space-y-4">
-        <button
-          onClick={handlePasswordReset}
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-        >
-          Forgot your password?
-        </button>
-        
         <div className="border-t border-gray-200 pt-4">
           <p className="text-gray-600 text-sm">
             Don't have an account?{' '}
@@ -135,6 +109,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegis
               Register your hospital
             </button>
           </p>
+        </div>
+      </div>
+
+      <div className="mt-6 bg-blue-50 rounded-lg p-4">
+        <h4 className="font-medium text-blue-900 mb-2">Demo Credentials</h4>
+        <div className="text-sm text-blue-800 space-y-1">
+          <p><strong>Hospital ID:</strong> DEMO001</p>
+          <p><strong>Password:</strong> demo123</p>
         </div>
       </div>
     </div>
