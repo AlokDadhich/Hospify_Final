@@ -62,22 +62,6 @@ export const HomePage: React.FC<HomePageProps> = ({
             Revolutionizing healthcare accessibility through real-time data integration and AI-powered insights
           </p>
           
-          {/* Key Features - Centered Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 max-w-5xl mx-auto">
-            <div className="bg-white/10 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">🔄 Real-time Integration</h3>
-              <p className="text-sm text-blue-100">Direct API connections with hospital management systems</p>
-            </div>
-            <div className="bg-white/10 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">🤖 AI-Powered Predictions</h3>
-              <p className="text-sm text-blue-100">Predictive analytics for resource availability</p>
-            </div>
-            <div className="bg-white/10 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">🌐 Nationwide Network</h3>
-              <p className="text-sm text-blue-100">Connecting 10,000+ hospitals across India</p>
-            </div>
-          </div>
-
           {/* Future Vision - Centered */}
           <div className="bg-white/10 rounded-lg p-6 max-w-6xl mx-auto">
             <h3 className="text-xl font-semibold mb-3">🚀 Our Vision for 2025-2030</h3>
@@ -115,111 +99,6 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </ul>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Technology Integration Section - Centered */}
-      <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">🔗 Real-time Data Integration</h2>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Current Implementation</h3>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium text-gray-900">Hospital Management System APIs</p>
-                  <p className="text-sm text-gray-600">RESTful APIs for real-time bed availability updates</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium text-gray-900">Supabase Real-time Database</p>
-                  <p className="text-sm text-gray-600">Live data synchronization across all connected devices</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium text-gray-900">GPS & Location Services</p>
-                  <p className="text-sm text-gray-600">Precise hospital location and distance calculations</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Future Integrations</h3>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium text-gray-900">IoT Sensor Networks</p>
-                  <p className="text-sm text-gray-600">Smart beds with occupancy sensors for instant updates</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium text-gray-900">FHIR Standard Integration</p>
-                  <p className="text-sm text-gray-600">Healthcare interoperability for seamless data exchange</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-indigo-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium text-gray-900">AI-Powered Analytics</p>
-                  <p className="text-sm text-gray-600">Machine learning for predictive resource management</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Key Features Section */}
-      <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">🚀 Key Features & Capabilities</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="font-semibold mb-2 text-blue-600">🗺️ Map-Based Filtering</h3>
-            <p className="text-sm text-gray-600 mb-2">Intuitive visual map interface for easy navigation.</p>
-            <p className="text-sm text-gray-600">Filters by city, pincode, bed type, and ambulance availability.</p>
-          </div>
-          
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="font-semibold mb-2 text-green-600">📱 Web-Based, Responsive Design</h3>
-            <p className="text-sm text-gray-600 mb-2">Runs on any device (desktop or mobile) with minimal loading time.</p>
-            <p className="text-sm text-gray-600">Built using React + Tailwind for accessibility in low-resource areas.</p>
-          </div>
-          
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="font-semibold mb-2 text-purple-600">🌍 Multilingual & Inclusive</h3>
-            <p className="text-sm text-gray-600 mb-2">Future multilingual support for non-English speakers.</p>
-            <p className="text-sm text-gray-600">Enhances accessibility for India's diverse population.</p>
-          </div>
-          
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="font-semibold mb-2 text-orange-600">🤖 Predictive Analytics Potential</h3>
-            <p className="text-sm text-gray-600 mb-2">Future ML integration to forecast hospital demand surges.</p>
-            <p className="text-sm text-gray-600">Helps governments and hospitals plan resource allocation proactively.</p>
-          </div>
-          
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="font-semibold mb-2 text-indigo-600">🔒 Scalable + Secure Architecture</h3>
-            <p className="text-sm text-gray-600 mb-2">Built with modern tech stack (React, Node, Supabase).</p>
-            <p className="text-sm text-gray-600">Ensures security, scalability, and real-time capability.</p>
-          </div>
-          
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="font-semibold mb-2 text-red-600">🛡️ Reduced Panic + Better Crisis Management</h3>
-            <p className="text-sm text-gray-600 mb-2">Displays verified, real-time resource availability to avert panic.</p>
-            <p className="text-sm text-gray-600">Streamlines hospital operations and builds public trust.</p>
           </div>
         </div>
       </div>

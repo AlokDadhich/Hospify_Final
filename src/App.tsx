@@ -19,7 +19,7 @@ import { HospitalDashboard } from './components/dashboard/HospitalDashboard';
 import { HomePage } from './pages/HomePage';
 import { AboutPage } from './pages/AboutPage';
 import { MissionPage } from './pages/MissionPage';
-import { CommunityPage } from './pages/CommunityPage';
+import { FeaturesPage } from './pages/FeaturesPage';
 import { TechnologyPage } from './pages/TechnologyPage';
 import { FuturePage } from './pages/FuturePage';
 
@@ -378,7 +378,7 @@ function App() {
           } />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/mission" element={<MissionPage />} />
-          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
           <Route path="/technology" element={<TechnologyPage />} />
           <Route path="/future" element={<FuturePage />} />
         </Routes>

@@ -23,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
     { name: 'Mission', path: '/mission' },
-    { name: 'Community', path: '/community' },
+    { name: 'Features', path: '/features' },
     { name: 'Technology', path: '/technology' },
     { name: 'Future', path: '/future' }
   ];
