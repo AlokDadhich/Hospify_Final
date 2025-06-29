@@ -149,7 +149,7 @@ export const generateSampleHospitals = (count: number = 100): HospitalProfile[] 
   const hospitals: HospitalProfile[] = [];
   
   for (let i = 0; i < count; i++) {
-    const area = selectWeightArea();
+    const area = selectWeightedArea();
     const hospitalName = PUNE_HOSPITAL_NAMES[Math.floor(Math.random() * PUNE_HOSPITAL_NAMES.length)];
     
     // Generate location within area radius (most within 3km, some up to 8km)
