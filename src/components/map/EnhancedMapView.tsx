@@ -562,7 +562,7 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
             <div className="w-3 h-3 bg-green-500 rounded-full mr-2" />
-            <span className="text-gray-600">High Availability (>20%)</span>
+            <span className="text-gray-600">High Availability (&gt;20%)</span>
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2" />
@@ -570,7 +570,7 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 bg-red-500 rounded-full mr-2" />
-            <span className="text-gray-600">Low (<10%)</span>
+            <span className="text-gray-600">Low (&lt;10%)</span>
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 bg-gray-500 rounded-full mr-2" />
