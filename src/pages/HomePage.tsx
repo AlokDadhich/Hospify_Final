@@ -52,18 +52,18 @@ export const HomePage: React.FC<HomePageProps> = ({
 }) => {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Hero Section with Future Vision */}
-      <div className="mb-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
-        <div className="max-w-4xl">
+      {/* Hero Section with Future Vision - Centered */}
+      <div className="mb-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white text-center">
+        <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold mb-4">
             🏥 Hospify - Real-time Hospital Resource Tracking
           </h1>
-          <p className="text-xl text-blue-100 mb-6">
+          <p className="text-xl text-blue-100 mb-6 max-w-4xl mx-auto">
             Revolutionizing healthcare accessibility through real-time data integration and AI-powered insights
           </p>
           
-          {/* Key Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {/* Key Features - Centered Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 max-w-5xl mx-auto">
             <div className="bg-white/10 rounded-lg p-4">
               <h3 className="font-semibold mb-2">🔄 Real-time Integration</h3>
               <p className="text-sm text-blue-100">Direct API connections with hospital management systems</p>
@@ -78,13 +78,13 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
           </div>
 
-          {/* Future Vision */}
-          <div className="bg-white/10 rounded-lg p-6">
+          {/* Future Vision - Centered */}
+          <div className="bg-white/10 rounded-lg p-6 max-w-6xl mx-auto">
             <h3 className="text-xl font-semibold mb-3">🚀 Our Vision for 2025-2030</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <h4 className="font-medium mb-2">Phase 1: Real-time Integration (2025)</h4>
-                <ul className="space-y-1 text-blue-100">
+                <ul className="space-y-1 text-blue-100 text-left">
                   <li>• Direct HMS integration via APIs</li>
                   <li>• IoT sensor networks for bed monitoring</li>
                   <li>• Automated ambulance tracking</li>
@@ -92,7 +92,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
               <div>
                 <h4 className="font-medium mb-2">Phase 2: AI & Predictions (2026-2027)</h4>
-                <ul className="space-y-1 text-blue-100">
+                <ul className="space-y-1 text-blue-100 text-left">
                   <li>• ML-powered demand forecasting</li>
                   <li>• Intelligent resource allocation</li>
                   <li>• Emergency response optimization</li>
@@ -100,7 +100,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
               <div>
                 <h4 className="font-medium mb-2">Phase 3: Smart Healthcare (2028-2030)</h4>
-                <ul className="space-y-1 text-blue-100">
+                <ul className="space-y-1 text-blue-100 text-left">
                   <li>• Blockchain for secure health records</li>
                   <li>• Telemedicine integration</li>
                   <li>• Global healthcare network</li>
@@ -108,7 +108,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
               <div>
                 <h4 className="font-medium mb-2">Impact Goals</h4>
-                <ul className="space-y-1 text-blue-100">
+                <ul className="space-y-1 text-blue-100 text-left">
                   <li>• 50% reduction in emergency response time</li>
                   <li>• 1M+ lives saved annually</li>
                   <li>• Universal healthcare accessibility</li>
@@ -119,10 +119,12 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </div>
 
-      {/* Technology Integration Section */}
+      {/* Technology Integration Section - Centered */}
       <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">🔗 Real-time Data Integration</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">🔗 Real-time Data Integration</h2>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Current Implementation</h3>
             <div className="space-y-3">
@@ -174,6 +176,50 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Key Features Section */}
+      <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">🚀 Key Features & Capabilities</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-semibold mb-2 text-blue-600">🗺️ Map-Based Filtering</h3>
+            <p className="text-sm text-gray-600 mb-2">Intuitive visual map interface for easy navigation.</p>
+            <p className="text-sm text-gray-600">Filters by city, pincode, bed type, and ambulance availability.</p>
+          </div>
+          
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-semibold mb-2 text-green-600">📱 Web-Based, Responsive Design</h3>
+            <p className="text-sm text-gray-600 mb-2">Runs on any device (desktop or mobile) with minimal loading time.</p>
+            <p className="text-sm text-gray-600">Built using React + Tailwind for accessibility in low-resource areas.</p>
+          </div>
+          
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-semibold mb-2 text-purple-600">🌍 Multilingual & Inclusive</h3>
+            <p className="text-sm text-gray-600 mb-2">Future multilingual support for non-English speakers.</p>
+            <p className="text-sm text-gray-600">Enhances accessibility for India's diverse population.</p>
+          </div>
+          
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-semibold mb-2 text-orange-600">🤖 Predictive Analytics Potential</h3>
+            <p className="text-sm text-gray-600 mb-2">Future ML integration to forecast hospital demand surges.</p>
+            <p className="text-sm text-gray-600">Helps governments and hospitals plan resource allocation proactively.</p>
+          </div>
+          
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-semibold mb-2 text-indigo-600">🔒 Scalable + Secure Architecture</h3>
+            <p className="text-sm text-gray-600 mb-2">Built with modern tech stack (React, Node, Supabase).</p>
+            <p className="text-sm text-gray-600">Ensures security, scalability, and real-time capability.</p>
+          </div>
+          
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-semibold mb-2 text-red-600">🛡️ Reduced Panic + Better Crisis Management</h3>
+            <p className="text-sm text-gray-600 mb-2">Displays verified, real-time resource availability to avert panic.</p>
+            <p className="text-sm text-gray-600">Streamlines hospital operations and builds public trust.</p>
           </div>
         </div>
       </div>
