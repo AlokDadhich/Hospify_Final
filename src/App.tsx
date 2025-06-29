@@ -44,6 +44,7 @@ function App() {
   const [hospitals, setHospitals] = useState<HospitalProfile[]>([]);
   const [availability, setAvailability] = useState<{ [key: string]: BedAvailability }>({});
   const [filteredHospitals, setFilteredHospitals] = useState<HospitalProfile[]>([]);
+  const [displayHospitals, setDisplayHospitals] = useState<HospitalProfile[]>([]); // Hospitals to show in list/map
   
   // UI state
   const [filters, setFilters] = useState<SearchFiltersType>({
@@ -102,9 +103,13 @@ function App() {
     const filtered = filterHospitals(hospitals, filters, availability);
     setFilteredHospitals(filtered);
     
+    // Limit to 40 hospitals for display (same as map)
+    const limitedForDisplay = filtered.slice(0, 40);
+    setDisplayHospitals(limitedForDisplay);
+    
     // Update hospitals with distance for display
     if (userLocation) {
-      const withDistance = filtered.map(hospital => {
+      const withDistance = limitedForDisplay.map(hospital => {
         const distance = calculateDistance(
           userLocation.latitude,
           userLocation.longitude,
@@ -116,7 +121,7 @@ function App() {
       
       setHospitalsWithDistance(withDistance);
     } else {
-      setHospitalsWithDistance(filtered.map(h => ({ ...h, distance: 0 })));
+      setHospitalsWithDistance(limitedForDisplay.map(h => ({ ...h, distance: 0 })));
     }
   }, [hospitals, availability, filters, userLocation]);
 
@@ -218,7 +223,7 @@ function App() {
     }
   };
 
-  // Handle hospital selection from map
+  // Handle hospital selection from map or list
   const handleHospitalSelect = (hospital: HospitalProfile) => {
     setSelectedHospital(hospital);
   };
@@ -365,7 +370,7 @@ function App() {
           onNearestHospital={handleNearestHospital}
         />
 
-        <StatsOverview hospitals={filteredHospitals} availability={availability} />
+        <StatsOverview hospitals={displayHospitals} availability={availability} />
 
         <div className="mb-6">
           <div className="flex justify-between items-center">
@@ -386,9 +391,9 @@ function App() {
               ))}
             </div>
             <div className="text-sm text-gray-500">
-              Showing {filteredHospitals.length} hospitals in Pune area
+              Showing {displayHospitals.length} hospitals in Pune area
               {locationDetected && ` within ${filters.radius}km of your location`}
-              {filteredHospitals.length > 0 && hospitalsWithDistance[0] && ` (nearest: ${hospitalsWithDistance[0]?.distance?.toFixed(1)}km)`}
+              {displayHospitals.length > 0 && hospitalsWithDistance[0] && ` (nearest: ${hospitalsWithDistance[0]?.distance?.toFixed(1)}km)`}
             </div>
           </div>
         </div>
@@ -416,13 +421,13 @@ function App() {
 
             {activeView === 'map' && (
               <EnhancedMapView
-                hospitals={filteredHospitals}
+                hospitals={displayHospitals}
                 availability={availability}
                 userLocation={userLocation}
                 selectedHospital={selectedHospital}
                 onHospitalSelect={handleHospitalSelect}
                 maxDistance={filters.radius}
-                maxResults={50}
+                maxResults={40}
               />
             )}
 
@@ -433,7 +438,7 @@ function App() {
                   <div>
                     <h4 className="font-medium text-gray-900 mb-4">Top Hospitals by Availability</h4>
                     <div className="space-y-3">
-                      {filteredHospitals.slice(0, 5).map((hospital) => {
+                      {displayHospitals.slice(0, 5).map((hospital) => {
                         const hospitalAvailability = availability[hospital.id];
                         const distance = hospitalsWithDistance.find(h => h.id === hospital.id)?.distance;
                         
@@ -465,12 +470,12 @@ function App() {
                     <div className="space-y-3">
                       <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
                         <span className="text-gray-900">Total Hospitals</span>
-                        <span className="font-bold text-green-600">{filteredHospitals.length}</span>
+                        <span className="font-bold text-green-600">{displayHospitals.length}</span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                         <span className="text-gray-900">Verified Hospitals</span>
                         <span className="font-bold text-blue-600">
-                          {filteredHospitals.filter(h => h.isVerified).length}
+                          {displayHospitals.filter(h => h.isVerified).length}
                         </span>
                       </div>
                       <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
@@ -489,7 +494,7 @@ function App() {
               </div>
             )}
 
-            {filteredHospitals.length === 0 && !dataLoading && (
+            {displayHospitals.length === 0 && !dataLoading && (
               <div className="text-center py-12">
                 <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No hospitals found</h3>
