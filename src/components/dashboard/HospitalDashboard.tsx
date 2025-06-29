@@ -17,9 +17,10 @@ import { AuthService } from '../../services/authService';
 
 interface HospitalDashboardProps {
   hospitalId: string;
+  onDataUpdate?: (availability: BedAvailability) => void;
 }
 
-export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({ hospitalId }) => {
+export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({ hospitalId, onDataUpdate }) => {
   const [availability, setAvailability] = useState<BedAvailability | null>(null);
   const [hospital, setHospital] = useState<HospitalProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,24 +44,48 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({ hospitalId
   const loadData = async () => {
     try {
       setLoading(true);
-      const [hospitalData, availabilityData] = await Promise.all([
-        HospitalService.getHospitalProfile(hospitalId),
-        HospitalService.getBedAvailability(hospitalId)
-      ]);
+      
+      // For demo purposes, use sample data
+      const sampleHospital: HospitalProfile = {
+        id: hospitalId,
+        name: 'Sample Hospital',
+        address: '123 Medical Center Drive, Pune, Maharashtra',
+        city: 'Pune',
+        state: 'Maharashtra',
+        pincode: '411001',
+        phone: '+91-20-1234-5678',
+        email: 'admin@samplehospital.com',
+        registrationNumber: 'MH/12345/2023',
+        location: { latitude: 18.5204, longitude: 73.8567 },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isVerified: true,
+        adminUserId: 'admin1'
+      };
 
-      setHospital(hospitalData);
-      setAvailability(availabilityData);
+      const sampleAvailability: BedAvailability = {
+        id: `availability_${hospitalId}`,
+        hospitalId,
+        icuBeds: { total: 50, available: 15, occupied: 35 },
+        generalBeds: { total: 200, available: 45, occupied: 155 },
+        oxygenBeds: { total: 80, available: 20, occupied: 60 },
+        ventilators: { total: 25, available: 8, occupied: 17 },
+        ambulances: { total: 8, available: 3, onDuty: 5 },
+        lastUpdated: new Date().toISOString(),
+        updatedBy: 'admin'
+      };
 
-      if (availabilityData) {
-        setFormData({
-          icuBeds: availabilityData.icuBeds,
-          generalBeds: availabilityData.generalBeds,
-          oxygenBeds: availabilityData.oxygenBeds,
-          ventilators: availabilityData.ventilators,
-          ambulances: availabilityData.ambulances
-        });
-        setLastUpdated(new Date(availabilityData.lastUpdated));
-      }
+      setHospital(sampleHospital);
+      setAvailability(sampleAvailability);
+      setFormData({
+        icuBeds: sampleAvailability.icuBeds,
+        generalBeds: sampleAvailability.generalBeds,
+        oxygenBeds: sampleAvailability.oxygenBeds,
+        ventilators: sampleAvailability.ventilators,
+        ambulances: sampleAvailability.ambulances
+      });
+      setLastUpdated(new Date(sampleAvailability.lastUpdated));
+      
     } catch (error) {
       setError('Failed to load hospital data');
       console.error('Error loading data:', error);
@@ -80,7 +105,8 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({ hospitalId
         return;
       }
 
-      const updateData = {
+      const updateData: BedAvailability = {
+        id: `availability_${hospitalId}`,
         hospitalId,
         icuBeds: {
           ...formData.icuBeds,
@@ -102,13 +128,20 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({ hospitalId
           ...formData.ambulances,
           onDuty: formData.ambulances.total - formData.ambulances.available
         },
+        lastUpdated: new Date().toISOString(),
         updatedBy: user.uid
       };
 
-      await HospitalService.updateBedAvailability(updateData);
+      // Update local state
+      setAvailability(updateData);
+      setLastUpdated(new Date());
+      
+      // Call the callback to update parent component
+      if (onDataUpdate) {
+        onDataUpdate(updateData);
+      }
       
       setSuccess('Data updated successfully!');
-      setLastUpdated(new Date());
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);

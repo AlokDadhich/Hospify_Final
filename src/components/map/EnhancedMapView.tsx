@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MapPin, Navigation, Phone, Clock, Star, AlertCircle, Filter } from 'lucide-react';
 import { HospitalProfile, BedAvailability } from '../../types/hospital';
-import { HospitalService } from '../../services/hospitalService';
 
 declare global {
   interface Window {
@@ -16,6 +15,8 @@ interface UserLocation {
 }
 
 interface EnhancedMapViewProps {
+  hospitals: HospitalProfile[];
+  availability: { [key: string]: BedAvailability };
   userLocation?: UserLocation;
   selectedHospital?: HospitalProfile;
   onHospitalSelect?: (hospital: HospitalProfile) => void;
@@ -24,6 +25,8 @@ interface EnhancedMapViewProps {
 }
 
 export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
+  hospitals,
+  availability,
   userLocation,
   selectedHospital,
   onHospitalSelect,
@@ -32,13 +35,10 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
-  const [hospitals, setHospitals] = useState<HospitalProfile[]>([]);
-  const [availability, setAvailability] = useState<{ [key: string]: BedAvailability }>({});
   const [markers, setMarkers] = useState<any[]>([]);
   const [userMarker, setUserMarker] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchStatus, setSearchStatus] = useState<string>('Initializing...');
   const [filterType, setFilterType] = useState<'all' | 'icu' | 'general' | 'oxygen'>('all');
 
   const API_KEY = 'AIzaSyD-hTQrtpPYyQZ49NhuMFAppgacyO89LBA';
@@ -49,23 +49,41 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
   }, []);
 
   useEffect(() => {
-    if (map) {
-      loadHospitals();
-    }
-  }, [map]);
-
-  useEffect(() => {
     if (map && hospitals.length > 0) {
       updateMarkers();
     }
-  }, [hospitals, availability, filterType]);
+  }, [map, hospitals, availability, filterType]);
 
   useEffect(() => {
     if (userLocation && map) {
       addUserLocationMarker();
-      filterHospitalsByDistance();
+      // Center map on user location
+      map.setCenter({ lat: userLocation.latitude, lng: userLocation.longitude });
     }
   }, [userLocation, map]);
+
+  useEffect(() => {
+    if (selectedHospital && map) {
+      // Focus on selected hospital
+      map.setCenter({ 
+        lat: selectedHospital.location.latitude, 
+        lng: selectedHospital.location.longitude 
+      });
+      map.setZoom(15);
+      
+      // Find and trigger click on the corresponding marker
+      const marker = markers.find(m => {
+        const pos = m.getPosition();
+        return pos && 
+               Math.abs(pos.lat() - selectedHospital.location.latitude) < 0.001 &&
+               Math.abs(pos.lng() - selectedHospital.location.longitude) < 0.001;
+      });
+      
+      if (marker && window.google && window.google.maps && window.google.maps.event) {
+        window.google.maps.event.trigger(marker, 'click');
+      }
+    }
+  }, [selectedHospital, map, markers]);
 
   const loadGoogleMaps = () => {
     if (window.google && window.google.maps) {
@@ -79,7 +97,7 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
       return;
     }
 
-    setSearchStatus('Loading Google Maps...');
+    setIsLoading(true);
     const script = document.createElement('script');
     script.id = 'google-maps-script';
     script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&callback=initGoogleMap`;
@@ -103,10 +121,9 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
     if (!mapRef.current) return;
 
     try {
-      setSearchStatus('Initializing map...');
       const mapInstance = new window.google.maps.Map(mapRef.current, {
         center: userLocation ? { lat: userLocation.latitude, lng: userLocation.longitude } : DEFAULT_CENTER,
-        zoom: 12,
+        zoom: userLocation ? 13 : 11,
         styles: [
           {
             featureType: 'poi.medical',
@@ -121,240 +138,12 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
       });
 
       setMap(mapInstance);
+      setIsLoading(false);
     } catch (err) {
       console.error('Map initialization error:', err);
       setError('Failed to initialize map. Please refresh the page.');
       setIsLoading(false);
     }
-  };
-
-  const loadHospitals = async () => {
-    try {
-      setSearchStatus('Loading hospitals...');
-      const hospitalData = await HospitalService.getAllHospitals();
-      
-      if (hospitalData.length === 0) {
-        // Generate sample data if no real data available
-        const sampleHospitals = generateSampleHospitals();
-        setHospitals(sampleHospitals);
-        
-        // Generate sample availability for each hospital
-        const sampleAvailabilityMap: { [key: string]: BedAvailability } = {};
-        sampleHospitals.forEach(hospital => {
-          sampleAvailabilityMap[hospital.id] = generateSampleAvailability(hospital.id);
-        });
-        setAvailability(sampleAvailabilityMap);
-      } else {
-        setHospitals(hospitalData);
-        
-        // Subscribe to real-time bed availability updates
-        const unsubscribe = HospitalService.subscribeToAllBedAvailability((availabilityData) => {
-          const availabilityMap: { [key: string]: BedAvailability } = {};
-          availabilityData.forEach(item => {
-            availabilityMap[item.hospitalId] = item;
-          });
-          setAvailability(availabilityMap);
-        });
-      }
-
-      setSearchStatus(`Found ${hospitalData.length || 6} hospitals`);
-      setIsLoading(false);
-
-    } catch (error) {
-      console.error('Error loading hospitals:', error);
-      // Use sample data as fallback
-      const sampleHospitals = generateSampleHospitals();
-      setHospitals(sampleHospitals);
-      
-      // Generate sample availability for each hospital
-      const sampleAvailabilityMap: { [key: string]: BedAvailability } = {};
-      sampleHospitals.forEach(hospital => {
-        sampleAvailabilityMap[hospital.id] = generateSampleAvailability(hospital.id);
-      });
-      setAvailability(sampleAvailabilityMap);
-      
-      setSearchStatus(`Showing sample data (${sampleHospitals.length} hospitals)`);
-      setIsLoading(false);
-    }
-  };
-
-  const generateSampleHospitals = (): HospitalProfile[] => {
-    return [
-      {
-        id: 'ruby-hall',
-        name: 'Ruby Hall Clinic',
-        address: '40, Sassoon Road, Pune, Maharashtra 411001',
-        city: 'Pune',
-        state: 'Maharashtra',
-        pincode: '411001',
-        phone: '+91-20-6645-6645',
-        email: 'info@rubyhall.com',
-        registrationNumber: 'MH/12345/2023',
-        location: { latitude: 18.5314, longitude: 73.8750 },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isVerified: true,
-        adminUserId: 'admin1'
-      },
-      {
-        id: 'jehangir',
-        name: 'Jehangir Hospital',
-        address: '32, Sassoon Road, Pune, Maharashtra 411001',
-        city: 'Pune',
-        state: 'Maharashtra',
-        pincode: '411001',
-        phone: '+91-20-6633-3333',
-        email: 'info@jehangirhospital.com',
-        registrationNumber: 'MH/12346/2023',
-        location: { latitude: 18.5366, longitude: 73.8897 },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isVerified: true,
-        adminUserId: 'admin2'
-      },
-      {
-        id: 'kem',
-        name: 'KEM Hospital',
-        address: 'Rasta Peth, Pune, Maharashtra 411011',
-        city: 'Pune',
-        state: 'Maharashtra',
-        pincode: '411011',
-        phone: '+91-20-2612-6767',
-        email: 'info@kemhospitalpune.org',
-        registrationNumber: 'MH/12347/2023',
-        location: { latitude: 18.5089, longitude: 73.8553 },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isVerified: true,
-        adminUserId: 'admin3'
-      },
-      {
-        id: 'columbia-asia',
-        name: 'Columbia Asia Hospital',
-        address: 'Kharadi, Pune, Maharashtra 411014',
-        city: 'Pune',
-        state: 'Maharashtra',
-        pincode: '411014',
-        phone: '+91-20-6740-7000',
-        email: 'pune@columbiaasia.com',
-        registrationNumber: 'MH/12348/2023',
-        location: { latitude: 18.5515, longitude: 73.9370 },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isVerified: true,
-        adminUserId: 'admin4'
-      },
-      {
-        id: 'sahyadri',
-        name: 'Sahyadri Hospitals',
-        address: 'Nagar Road, Pune, Maharashtra 411014',
-        city: 'Pune',
-        state: 'Maharashtra',
-        pincode: '411014',
-        phone: '+91-20-6730-3000',
-        email: 'info@sahyadrihospitals.com',
-        registrationNumber: 'MH/12349/2023',
-        location: { latitude: 18.5679, longitude: 73.9106 },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isVerified: true,
-        adminUserId: 'admin5'
-      },
-      {
-        id: 'manipal-hospital',
-        name: 'Manipal Hospital',
-        address: 'Baner Road, Pune, Maharashtra 411045',
-        city: 'Pune',
-        state: 'Maharashtra',
-        pincode: '411045',
-        phone: '+91-20-6712-7000',
-        email: 'pune@manipalhospitals.com',
-        registrationNumber: 'MH/12350/2023',
-        location: { latitude: 18.5590, longitude: 73.7850 },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isVerified: true,
-        adminUserId: 'admin6'
-      }
-    ];
-  };
-
-  const generateSampleAvailability = (hospitalId: string): BedAvailability => {
-    const icuTotal = 20 + Math.floor(Math.random() * 30);
-    const icuAvailable = Math.floor(Math.random() * 15) + 5;
-    const generalTotal = 100 + Math.floor(Math.random() * 100);
-    const generalAvailable = Math.floor(Math.random() * 50) + 20;
-    const oxygenTotal = 30 + Math.floor(Math.random() * 40);
-    const oxygenAvailable = Math.floor(Math.random() * 20) + 10;
-    const ventilatorTotal = 10 + Math.floor(Math.random() * 15);
-    const ventilatorAvailable = Math.floor(Math.random() * 8) + 2;
-    const ambulanceTotal = 5 + Math.floor(Math.random() * 5);
-    const ambulanceAvailable = Math.floor(Math.random() * 3) + 1;
-
-    return {
-      id: `availability_${hospitalId}`,
-      hospitalId,
-      icuBeds: {
-        total: icuTotal,
-        available: icuAvailable,
-        occupied: icuTotal - icuAvailable
-      },
-      generalBeds: {
-        total: generalTotal,
-        available: generalAvailable,
-        occupied: generalTotal - generalAvailable
-      },
-      oxygenBeds: {
-        total: oxygenTotal,
-        available: oxygenAvailable,
-        occupied: oxygenTotal - oxygenAvailable
-      },
-      ventilators: {
-        total: ventilatorTotal,
-        available: ventilatorAvailable,
-        occupied: ventilatorTotal - ventilatorAvailable
-      },
-      ambulances: {
-        total: ambulanceTotal,
-        available: ambulanceAvailable,
-        onDuty: ambulanceTotal - ambulanceAvailable
-      },
-      lastUpdated: new Date().toISOString(),
-      updatedBy: 'system'
-    };
-  };
-
-  const filterHospitalsByDistance = () => {
-    if (!userLocation) return;
-
-    const hospitalsWithDistance = hospitals.map(hospital => ({
-      ...hospital,
-      distance: calculateDistance(
-        userLocation.latitude,
-        userLocation.longitude,
-        hospital.location.latitude,
-        hospital.location.longitude
-      )
-    }))
-    .filter(hospital => hospital.distance <= maxDistance)
-    .sort((a, b) => a.distance - b.distance)
-    .slice(0, maxResults);
-
-    setHospitals(hospitalsWithDistance);
-  };
-
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371; // Earth's radius in kilometers
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
   };
 
   const updateMarkers = () => {
@@ -364,8 +153,11 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
     const newMarkers: any[] = [];
     const filteredHospitals = getFilteredHospitals();
 
-    filteredHospitals.forEach((hospital) => {
-      const hospitalAvailability = availability[hospital.id] || generateSampleAvailability(hospital.id);
+    // Limit to maxResults (40) hospitals
+    const hospitalsToShow = filteredHospitals.slice(0, maxResults);
+
+    hospitalsToShow.forEach((hospital) => {
+      const hospitalAvailability = availability[hospital.id];
       const availabilityColor = getAvailabilityColor(hospital, hospitalAvailability);
 
       const marker = new window.google.maps.Marker({
@@ -406,7 +198,8 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
     if (filterType === 'all') return hospitals;
 
     return hospitals.filter(hospital => {
-      const hospitalAvailability = availability[hospital.id] || generateSampleAvailability(hospital.id);
+      const hospitalAvailability = availability[hospital.id];
+      if (!hospitalAvailability) return false;
 
       switch (filterType) {
         case 'icu':
@@ -463,7 +256,6 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
     });
 
     setUserMarker(marker);
-    map.setCenter({ lat: userLocation.latitude, lng: userLocation.longitude });
   };
 
   const createInfoWindowContent = (hospital: HospitalProfile, hospitalAvailability?: BedAvailability) => {
@@ -489,6 +281,20 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
         ` : '<p style="margin: 0; font-size: 12px; color: #ef4444;">⚠️ Availability data not available</p>'}
       </div>
     `;
+  };
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   };
 
   if (error) {
@@ -539,7 +345,7 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
           {isLoading && (
             <div className="flex items-center text-sm text-blue-600">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-              <span>{searchStatus}</span>
+              <span>Loading map...</span>
             </div>
           )}
         </div>
@@ -550,8 +356,8 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center z-10">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 font-medium">{searchStatus}</p>
-              <p className="text-gray-500 text-sm mt-2">Loading hospital map...</p>
+              <p className="text-gray-600 font-medium">Loading hospital map...</p>
+              <p className="text-gray-500 text-sm mt-2">Preparing to show nearest 40 hospitals</p>
             </div>
           </div>
         )}
@@ -562,7 +368,7 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
             <div className="w-3 h-3 bg-green-500 rounded-full mr-2" />
-            <span className="text-gray-600">High Availability (&gt;20%)</span>
+            <span className="text-gray-600">High Availability (>20%)</span>
           </div>
           <div className="flex items-center">
             <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2" />
@@ -578,7 +384,7 @@ export const EnhancedMapView: React.FC<EnhancedMapViewProps> = ({
           </div>
         </div>
         <span className="text-gray-500">
-          Showing {getFilteredHospitals().length} hospitals • Real-time data
+          Showing {Math.min(getFilteredHospitals().length, maxResults)} hospitals • Real-time data
         </span>
       </div>
     </div>

@@ -74,14 +74,19 @@ function App() {
 
   // Filter hospitals when data or filters change
   useEffect(() => {
-    const filtered = filterHospitals(hospitals, filters, availability);
-    setFilteredHospitals(filtered);
+    let filtered = filterHospitals(hospitals, filters, availability);
     
+    // If user location is available, find nearest 40 hospitals
     if (userLocation) {
       const withDistance = findNearestHospitals(filtered, userLocation, filters.radius);
-      setHospitalsWithDistance(withDistance);
+      const nearest40 = withDistance.slice(0, 40); // Limit to 40 hospitals
+      setFilteredHospitals(nearest40);
+      setHospitalsWithDistance(nearest40);
     } else {
-      setHospitalsWithDistance(filtered.map(h => ({ ...h, distance: 0 })));
+      // Without location, still limit to 40 hospitals
+      const limited = filtered.slice(0, 40);
+      setFilteredHospitals(limited);
+      setHospitalsWithDistance(limited.map(h => ({ ...h, distance: 0 })));
     }
   }, [hospitals, availability, filters, userLocation]);
 
@@ -93,9 +98,9 @@ function App() {
       const hospitalData = await HospitalService.getAllHospitals();
       
       if (hospitalData.length === 0) {
-        // If no data in Firebase, generate sample data
+        // If no data in Firebase, generate sample data with 40+ hospitals
         console.log('No hospital data found, generating sample data...');
-        const sampleHospitals = generateSampleHospitals(100);
+        const sampleHospitals = generateSampleHospitals(50); // Generate 50 hospitals
         const sampleAvailability = generateSampleAvailability(sampleHospitals);
         
         setHospitals(sampleHospitals);
@@ -121,7 +126,7 @@ function App() {
     } catch (error) {
       console.error('Error loading hospital data:', error);
       // Fallback to sample data
-      const sampleHospitals = generateSampleHospitals(100);
+      const sampleHospitals = generateSampleHospitals(50);
       const sampleAvailability = generateSampleAvailability(sampleHospitals);
       
       setHospitals(sampleHospitals);
@@ -143,11 +148,13 @@ function App() {
       setUserLocation(location);
       
       const nearest = findNearestHospitals(hospitals, location, filters.radius);
-      setFilteredHospitals(nearest);
-      setHospitalsWithDistance(nearest);
+      const nearest40 = nearest.slice(0, 40); // Ensure we get exactly 40 hospitals
       
-      if (nearest.length > 0) {
-        setSelectedHospital(nearest[0]);
+      setFilteredHospitals(nearest40);
+      setHospitalsWithDistance(nearest40);
+      
+      if (nearest40.length > 0) {
+        setSelectedHospital(nearest40[0]);
         setActiveView('map');
       }
     } catch (error) {
@@ -166,6 +173,11 @@ function App() {
     } catch (error) {
       console.error('Error signing out:', error);
     }
+  };
+
+  // Handle hospital selection from map
+  const handleHospitalSelect = (hospital: HospitalProfile) => {
+    setSelectedHospital(hospital);
   };
 
   const viewButtons = [
@@ -224,7 +236,16 @@ function App() {
           </div>
         </header>
         
-        <HospitalDashboard hospitalId="sample-hospital-id" />
+        <HospitalDashboard 
+          hospitalId="sample-hospital-id" 
+          onDataUpdate={(updatedAvailability) => {
+            // Update the availability state when hospital updates data
+            setAvailability(prev => ({
+              ...prev,
+              [updatedAvailability.hospitalId]: updatedAvailability
+            }));
+          }}
+        />
       </div>
     );
   }
@@ -304,21 +325,27 @@ function App() {
         <StatsOverview hospitals={filteredHospitals} availability={availability} />
 
         <div className="mb-6">
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-            {viewButtons.map((button) => (
-              <button
-                key={button.key}
-                onClick={() => setActiveView(button.key as any)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
-                  activeView === button.key
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <button.icon className="h-4 w-4" />
-                <span>{button.label}</span>
-              </button>
-            ))}
+          <div className="flex justify-between items-center">
+            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+              {viewButtons.map((button) => (
+                <button
+                  key={button.key}
+                  onClick={() => setActiveView(button.key as any)}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
+                    activeView === button.key
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <button.icon className="h-4 w-4" />
+                  <span>{button.label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="text-sm text-gray-500">
+              Showing {filteredHospitals.length} of {hospitals.length} hospitals
+              {userLocation && ' (nearest 40)'}
+            </div>
           </div>
         </div>
 
@@ -337,6 +364,7 @@ function App() {
                     hospital={hospital}
                     availability={availability[hospital.id]}
                     distance={userLocation ? hospital.distance : undefined}
+                    onClick={() => handleHospitalSelect(hospital)}
                   />
                 ))}
               </div>
@@ -344,9 +372,11 @@ function App() {
 
             {activeView === 'map' && (
               <EnhancedMapView
+                hospitals={filteredHospitals}
+                availability={availability}
                 userLocation={userLocation}
                 selectedHospital={selectedHospital}
-                onHospitalSelect={setSelectedHospital}
+                onHospitalSelect={handleHospitalSelect}
                 maxDistance={filters.radius}
                 maxResults={40}
               />
@@ -395,6 +425,12 @@ function App() {
                         <span className="text-gray-900">Last Updated</span>
                         <span className="font-bold text-yellow-600">Live</span>
                       </div>
+                      {userLocation && (
+                        <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                          <span className="text-gray-900">Search Radius</span>
+                          <span className="font-bold text-purple-600">{filters.radius} km</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

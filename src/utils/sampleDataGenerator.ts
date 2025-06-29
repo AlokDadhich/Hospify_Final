@@ -42,7 +42,12 @@ const HOSPITAL_NAMES = [
   'Lilavati Hospital',
   'Breach Candy Hospital',
   'Jaslok Hospital',
-  'Hinduja Hospital'
+  'Hinduja Hospital',
+  'Ruby Hall Clinic',
+  'Jehangir Hospital',
+  'KEM Hospital',
+  'Sahyadri Hospital',
+  'Noble Hospital'
 ];
 
 // Generate random coordinates within a city radius
@@ -96,7 +101,7 @@ const generateRegistrationNumber = (state: string, year: number = 2023) => {
   return `${stateCode}/${number}/${year}`;
 };
 
-export const generateSampleHospitals = (count: number = 100): HospitalProfile[] => {
+export const generateSampleHospitals = (count: number = 50): HospitalProfile[] => {
   const hospitals: HospitalProfile[] = [];
   
   for (let i = 0; i < count; i++) {
@@ -105,14 +110,19 @@ export const generateSampleHospitals = (count: number = 100): HospitalProfile[] 
     const hospitalName = HOSPITAL_NAMES[Math.floor(Math.random() * HOSPITAL_NAMES.length)];
     const location = generateNearbyCoordinates(city.lat, city.lng);
     
+    // Generate unique pincode variations
+    const basePincode = parseInt(city.pincode);
+    const pincodeVariation = Math.floor(Math.random() * 50);
+    const pincode = (basePincode + pincodeVariation).toString();
+    
     const hospital: HospitalProfile = {
       id: `hospital_${i + 1}`,
-      name: `${hospitalName} - ${city.name}`,
-      address: `${Math.floor(Math.random() * 999) + 1}, Medical District, ${city.name}, ${city.state}`,
+      name: `${hospitalName} - ${city.name} ${i > 0 ? `Branch ${i}` : ''}`,
+      address: `${Math.floor(Math.random() * 999) + 1}, Medical District, ${city.name}, ${city.state} ${pincode}`,
       city: city.name,
       state: city.state,
-      pincode: city.pincode,
-      phone: generatePhoneNumber('22'),
+      pincode: pincode,
+      phone: generatePhoneNumber('20'),
       email: `admin@${hospitalName.toLowerCase().replace(/\s+/g, '')}-${city.name.toLowerCase()}.com`,
       registrationNumber: generateRegistrationNumber(city.state),
       location,

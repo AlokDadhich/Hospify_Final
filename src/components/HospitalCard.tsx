@@ -6,9 +6,10 @@ interface HospitalCardProps {
   hospital: HospitalProfile;
   availability?: BedAvailability;
   distance?: number;
+  onClick?: () => void;
 }
 
-export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, availability, distance }) => {
+export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, availability, distance, onClick }) => {
   const getAvailabilityColor = (available: number, total: number) => {
     if (total === 0) return 'text-gray-600';
     const percentage = (available / total) * 100;
@@ -36,7 +37,10 @@ export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, availabili
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 border border-gray-100">
+    <div 
+      className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 border border-gray-100 cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-2">
@@ -133,6 +137,7 @@ export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, availabili
         <a
           href={`tel:${hospital.phone}`}
           className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors duration-200"
+          onClick={(e) => e.stopPropagation()}
         >
           <Phone className="h-4 w-4" />
           <span>Call Hospital</span>
@@ -142,6 +147,7 @@ export const HospitalCard: React.FC<HospitalCardProps> = ({ hospital, availabili
           target="_blank"
           rel="noopener noreferrer"
           className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors duration-200"
+          onClick={(e) => e.stopPropagation()}
         >
           <MapPin className="h-4 w-4" />
           <span>Get Directions</span>
