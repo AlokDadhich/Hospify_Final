@@ -25,7 +25,7 @@ import { getCurrentLocation, findNearestHospitals } from './utils/geolocation';
 import { generateSampleHospitals, generateSampleAvailability } from './utils/sampleDataGenerator';
 
 // Icons
-import { MapPin, List, BarChart3, X, AlertCircle, LogOut, Settings, Navigation } from 'lucide-react';
+import { MapPin, List, BarChart3, X, AlertCircle, LogOut, Settings, Navigation, ChevronDown } from 'lucide-react';
 
 // Pune coordinates for default location
 const PUNE_CENTER = { latitude: 18.5204, longitude: 73.8567 };
@@ -53,6 +53,10 @@ function App() {
   const [dataLoading, setDataLoading] = useState(true);
   const [locationDetected, setLocationDetected] = useState(false);
   const [searchRadius, setSearchRadius] = useState(50); // Default 50km radius
+  
+  // Pagination state
+  const [hospitalsToShow, setHospitalsToShow] = useState(10); // Start with 10 hospitals
+  const [showingAll, setShowingAll] = useState(false);
 
   // Initialize auth listener
   useEffect(() => {
@@ -93,6 +97,10 @@ function App() {
       }).sort((a, b) => a.distance - b.distance);
       
       setHospitalsWithDistance(withDistance);
+      
+      // Reset pagination when location changes
+      setHospitalsToShow(10);
+      setShowingAll(false);
     } else {
       // Without location, show Pune hospitals
       const puneHospitals = allHospitals.filter(h => 
@@ -102,6 +110,10 @@ function App() {
       setHospitals(puneHospitals);
       setDisplayHospitals(puneHospitals.slice(0, 40));
       setHospitalsWithDistance(puneHospitals.slice(0, 40).map(h => ({ ...h, distance: 0 })));
+      
+      // Reset pagination
+      setHospitalsToShow(10);
+      setShowingAll(false);
     }
   }, [userLocation, allHospitals, searchRadius, locationDetected]);
 
@@ -206,6 +218,22 @@ function App() {
   // Handle hospital selection from map or list
   const handleHospitalSelect = (hospital: HospitalProfile) => {
     setSelectedHospital(hospital);
+  };
+
+  // Handle show more hospitals
+  const handleShowMore = () => {
+    if (showingAll) {
+      setHospitalsToShow(10);
+      setShowingAll(false);
+    } else {
+      setHospitalsToShow(hospitalsWithDistance.length);
+      setShowingAll(true);
+    }
+  };
+
+  // Get hospitals to display based on current pagination
+  const getHospitalsToDisplay = () => {
+    return hospitalsWithDistance.slice(0, hospitalsToShow);
   };
 
   const viewButtons = [
@@ -405,9 +433,9 @@ function App() {
               ))}
             </div>
             <div className="text-sm text-gray-500">
-              Showing {displayHospitals.length} hospitals in Pune area
+              Showing {hospitalsToShow} of {hospitalsWithDistance.length} hospitals in Pune area
               {locationDetected && ` within ${searchRadius}km of your location`}
-              {displayHospitals.length > 0 && hospitalsWithDistance[0] && ` (nearest: ${hospitalsWithDistance[0]?.distance?.toFixed(1)}km)`}
+              {hospitalsWithDistance.length > 0 && hospitalsWithDistance[0] && ` (nearest: ${hospitalsWithDistance[0]?.distance?.toFixed(1)}km)`}
             </div>
           </div>
         </div>
@@ -420,16 +448,42 @@ function App() {
         ) : (
           <>
             {activeView === 'list' && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {hospitalsWithDistance.map((hospital) => (
-                  <HospitalCard
-                    key={hospital.id}
-                    hospital={hospital}
-                    availability={availability[hospital.id]}
-                    distance={hospital.distance}
-                    onClick={() => handleHospitalSelect(hospital)}
-                  />
-                ))}
+              <div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {getHospitalsToDisplay().map((hospital) => (
+                    <HospitalCard
+                      key={hospital.id}
+                      hospital={hospital}
+                      availability={availability[hospital.id]}
+                      distance={hospital.distance}
+                      onClick={() => handleHospitalSelect(hospital)}
+                    />
+                  ))}
+                </div>
+                
+                {/* Show More Button */}
+                {hospitalsWithDistance.length > 10 && (
+                  <div className="mt-8 text-center">
+                    <button
+                      onClick={handleShowMore}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium flex items-center space-x-2 mx-auto transition-colors duration-200 shadow-lg"
+                    >
+                      <span>
+                        {showingAll 
+                          ? 'Show Less' 
+                          : `Show More Hospitals (${hospitalsWithDistance.length - hospitalsToShow} remaining)`
+                        }
+                      </span>
+                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showingAll ? 'rotate-180' : ''}`} />
+                    </button>
+                    <p className="text-sm text-gray-500 mt-2">
+                      {showingAll 
+                        ? `Showing all ${hospitalsWithDistance.length} hospitals`
+                        : `Showing ${hospitalsToShow} of ${hospitalsWithDistance.length} hospitals`
+                      }
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -500,6 +554,12 @@ function App() {
                         <span className="text-gray-900">Search Area</span>
                         <span className="font-bold text-purple-600">
                           {locationDetected ? `${searchRadius}km radius` : 'Pune City'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
+                        <span className="text-gray-900">Showing</span>
+                        <span className="font-bold text-indigo-600">
+                          {hospitalsToShow} of {hospitalsWithDistance.length}
                         </span>
                       </div>
                     </div>
