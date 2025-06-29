@@ -6,7 +6,6 @@ import { HospitalService } from './services/hospitalService';
 
 // Components
 import { Header } from './components/Header';
-import { SearchFilters } from './components/SearchFilters';
 import { HospitalCard } from './components/HospitalCard';
 import { EmergencyModal } from './components/EmergencyModal';
 import { EnhancedMapView } from './components/map/EnhancedMapView';
@@ -21,13 +20,12 @@ import { RegisterForm } from './components/auth/RegisterForm';
 import { HospitalDashboard } from './components/dashboard/HospitalDashboard';
 
 // Types and Utils
-import { HospitalProfile, BedAvailability, SearchFilters as SearchFiltersType, UserLocation } from './types';
-import { filterHospitals } from './utils/filters';
+import { HospitalProfile, BedAvailability, UserLocation } from './types';
 import { getCurrentLocation, findNearestHospitals } from './utils/geolocation';
 import { generateSampleHospitals, generateSampleAvailability } from './utils/sampleDataGenerator';
 
 // Icons
-import { MapPin, List, BarChart3, X, AlertCircle, LogOut, Settings } from 'lucide-react';
+import { MapPin, List, BarChart3, X, AlertCircle, LogOut, Settings, Navigation } from 'lucide-react';
 
 // Pune coordinates for default location
 const PUNE_CENTER = { latitude: 18.5204, longitude: 73.8567 };
@@ -43,17 +41,9 @@ function App() {
   const [allHospitals, setAllHospitals] = useState<HospitalProfile[]>([]);
   const [hospitals, setHospitals] = useState<HospitalProfile[]>([]);
   const [availability, setAvailability] = useState<{ [key: string]: BedAvailability }>({});
-  const [filteredHospitals, setFilteredHospitals] = useState<HospitalProfile[]>([]);
   const [displayHospitals, setDisplayHospitals] = useState<HospitalProfile[]>([]); // Hospitals to show in list/map
   
   // UI state
-  const [filters, setFilters] = useState<SearchFiltersType>({
-    city: 'Pune', // Default to Pune
-    pincode: '',
-    resourceType: 'all',
-    availabilityOnly: false,
-    radius: 50 // Default to 50km
-  });
   const [userLocation, setUserLocation] = useState<UserLocation>(PUNE_CENTER); // Default to Pune
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const [selectedHospital, setSelectedHospital] = useState<HospitalProfile | undefined>();
@@ -62,6 +52,7 @@ function App() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [locationDetected, setLocationDetected] = useState(false);
+  const [searchRadius, setSearchRadius] = useState(50); // Default 50km radius
 
   // Initialize auth listener
   useEffect(() => {
@@ -78,38 +69,20 @@ function App() {
     loadHospitalData();
   }, []);
 
-  // Apply location-based filtering when user location or filters change
+  // Apply location-based filtering when user location changes
   useEffect(() => {
     if (userLocation && allHospitals.length > 0) {
       // Find hospitals within radius of Pune/user location
-      const nearbyHospitals = findNearestHospitals(allHospitals, userLocation, filters.radius);
+      const nearbyHospitals = findNearestHospitals(allHospitals, userLocation, searchRadius);
       const limitedHospitals = nearbyHospitals.slice(0, 50); // Show up to 50 hospitals
       
-      console.log(`Found ${nearbyHospitals.length} hospitals within ${filters.radius}km of ${locationDetected ? 'your location' : 'Pune'}, showing ${limitedHospitals.length}`);
+      console.log(`Found ${nearbyHospitals.length} hospitals within ${searchRadius}km of ${locationDetected ? 'your location' : 'Pune'}, showing ${limitedHospitals.length}`);
       
       setHospitals(limitedHospitals);
-    } else {
-      // Without location, show Pune hospitals
-      const puneHospitals = allHospitals.filter(h => 
-        h.city.toLowerCase().includes('pune') || 
-        h.address.toLowerCase().includes('pune')
-      ).slice(0, 50);
-      setHospitals(puneHospitals);
-    }
-  }, [userLocation, allHospitals, filters.radius, locationDetected]);
-
-  // Filter hospitals when data or filters change
-  useEffect(() => {
-    const filtered = filterHospitals(hospitals, filters, availability);
-    setFilteredHospitals(filtered);
-    
-    // Limit to 40 hospitals for display (same as map)
-    const limitedForDisplay = filtered.slice(0, 40);
-    setDisplayHospitals(limitedForDisplay);
-    
-    // Update hospitals with distance for display
-    if (userLocation) {
-      const withDistance = limitedForDisplay.map(hospital => {
+      setDisplayHospitals(limitedHospitals.slice(0, 40)); // Limit to 40 for display
+      
+      // Update hospitals with distance for display
+      const withDistance = limitedHospitals.slice(0, 40).map(hospital => {
         const distance = calculateDistance(
           userLocation.latitude,
           userLocation.longitude,
@@ -121,9 +94,16 @@ function App() {
       
       setHospitalsWithDistance(withDistance);
     } else {
-      setHospitalsWithDistance(limitedForDisplay.map(h => ({ ...h, distance: 0 })));
+      // Without location, show Pune hospitals
+      const puneHospitals = allHospitals.filter(h => 
+        h.city.toLowerCase().includes('pune') || 
+        h.address.toLowerCase().includes('pune')
+      ).slice(0, 50);
+      setHospitals(puneHospitals);
+      setDisplayHospitals(puneHospitals.slice(0, 40));
+      setHospitalsWithDistance(puneHospitals.slice(0, 40).map(h => ({ ...h, distance: 0 })));
     }
-  }, [hospitals, availability, filters, userLocation]);
+  }, [userLocation, allHospitals, searchRadius, locationDetected]);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371; // Earth's radius in kilometers
@@ -198,8 +178,8 @@ function App() {
       setLocationDetected(true);
       
       // The useEffect will handle filtering hospitals by location
-      if (filteredHospitals.length > 0) {
-        setSelectedHospital(filteredHospitals[0]);
+      if (displayHospitals.length > 0) {
+        setSelectedHospital(displayHospitals[0]);
         setActiveView('map');
       }
     } catch (error) {
@@ -364,11 +344,45 @@ function App() {
           </div>
         )}
 
-        <SearchFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          onNearestHospital={handleNearestHospital}
-        />
+        {/* Quick Actions Bar */}
+        <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleNearestHospital}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors duration-200"
+              >
+                <Navigation className="h-4 w-4" />
+                <span>Find Nearest Hospital</span>
+              </button>
+              
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-gray-700">Search Radius:</label>
+                <select
+                  value={searchRadius}
+                  onChange={(e) => setSearchRadius(Number(e.target.value))}
+                  className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                >
+                  <option value={10}>10 km</option>
+                  <option value={25}>25 km</option>
+                  <option value={50}>50 km</option>
+                  <option value={100}>100 km</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="text-sm text-gray-500">
+              {locationDetected ? (
+                <div className="flex items-center text-green-600">
+                  <Navigation className="h-4 w-4 mr-1" />
+                  <span>Location detected</span>
+                </div>
+              ) : (
+                <span>Showing Pune area hospitals</span>
+              )}
+            </div>
+          </div>
+        </div>
 
         <StatsOverview hospitals={displayHospitals} availability={availability} />
 
@@ -392,7 +406,7 @@ function App() {
             </div>
             <div className="text-sm text-gray-500">
               Showing {displayHospitals.length} hospitals in Pune area
-              {locationDetected && ` within ${filters.radius}km of your location`}
+              {locationDetected && ` within ${searchRadius}km of your location`}
               {displayHospitals.length > 0 && hospitalsWithDistance[0] && ` (nearest: ${hospitalsWithDistance[0]?.distance?.toFixed(1)}km)`}
             </div>
           </div>
@@ -426,7 +440,7 @@ function App() {
                 userLocation={userLocation}
                 selectedHospital={selectedHospital}
                 onHospitalSelect={handleHospitalSelect}
-                maxDistance={filters.radius}
+                maxDistance={searchRadius}
                 maxResults={40}
               />
             )}
@@ -485,7 +499,7 @@ function App() {
                       <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
                         <span className="text-gray-900">Search Area</span>
                         <span className="font-bold text-purple-600">
-                          {locationDetected ? `${filters.radius}km radius` : 'Pune City'}
+                          {locationDetected ? `${searchRadius}km radius` : 'Pune City'}
                         </span>
                       </div>
                     </div>
@@ -500,16 +514,16 @@ function App() {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No hospitals found</h3>
                 <p className="text-gray-600">
                   {locationDetected 
-                    ? `No hospitals found within ${filters.radius}km of your location. Try increasing the search radius.`
-                    : 'Try adjusting your search filters or enabling location services to find nearby hospitals.'
+                    ? `No hospitals found within ${searchRadius}km of your location. Try increasing the search radius.`
+                    : 'Try enabling location services to find nearby hospitals.'
                   }
                 </p>
                 {locationDetected && (
                   <button
-                    onClick={() => setFilters(prev => ({ ...prev, radius: Math.min(prev.radius + 25, 100) }))}
+                    onClick={() => setSearchRadius(Math.min(searchRadius + 25, 100))}
                     className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    Increase radius to {Math.min(filters.radius + 25, 100)}km
+                    Increase radius to {Math.min(searchRadius + 25, 100)}km
                   </button>
                 )}
               </div>
