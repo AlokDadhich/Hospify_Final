@@ -45,46 +45,61 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({ hospitalId
     try {
       setLoading(true);
       
-      // For demo purposes, use sample data
-      const sampleHospital: HospitalProfile = {
-        id: hospitalId,
-        name: 'Sample Hospital',
-        address: '123 Medical Center Drive, Pune, Maharashtra',
-        city: 'Pune',
-        state: 'Maharashtra',
-        pincode: '411001',
-        phone: '+91-20-1234-5678',
-        email: 'admin@samplehospital.com',
-        registrationNumber: 'MH/12345/2023',
-        location: { latitude: 18.5204, longitude: 73.8567 },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isVerified: true,
-        adminUserId: 'admin1'
-      };
+      // Get current user
+      const session = await AuthService.getCurrentSession();
+      if (!session?.user) {
+        setError('User not authenticated');
+        return;
+      }
 
-      const sampleAvailability: BedAvailability = {
-        id: `availability_${hospitalId}`,
-        hospitalId,
-        icuBeds: { total: 50, available: 15, occupied: 35 },
-        generalBeds: { total: 200, available: 45, occupied: 155 },
-        oxygenBeds: { total: 80, available: 20, occupied: 60 },
-        ventilators: { total: 25, available: 8, occupied: 17 },
-        ambulances: { total: 8, available: 3, onDuty: 5 },
-        lastUpdated: new Date().toISOString(),
-        updatedBy: 'admin'
-      };
+      // Try to get hospital data from database
+      const hospitalData = await HospitalService.getHospitalProfile(hospitalId);
+      const availabilityData = await HospitalService.getBedAvailability(hospitalId);
 
-      setHospital(sampleHospital);
-      setAvailability(sampleAvailability);
-      setFormData({
-        icuBeds: sampleAvailability.icuBeds,
-        generalBeds: sampleAvailability.generalBeds,
-        oxygenBeds: sampleAvailability.oxygenBeds,
-        ventilators: sampleAvailability.ventilators,
-        ambulances: sampleAvailability.ambulances
-      });
-      setLastUpdated(new Date(sampleAvailability.lastUpdated));
+      if (hospitalData) {
+        setHospital(hospitalData);
+      } else {
+        // Create sample hospital for demo
+        const sampleHospital: HospitalProfile = {
+          id: hospitalId,
+          name: 'Sample Hospital',
+          address: '123 Medical Center Drive, Pune, Maharashtra',
+          city: 'Pune',
+          state: 'Maharashtra',
+          pincode: '411001',
+          phone: '+91-20-1234-5678',
+          email: 'admin@samplehospital.com',
+          registrationNumber: 'MH/12345/2023',
+          location: { latitude: 18.5204, longitude: 73.8567 },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isVerified: true,
+          adminUserId: session.user.id
+        };
+        setHospital(sampleHospital);
+      }
+
+      if (availabilityData) {
+        setAvailability(availabilityData);
+        setFormData({
+          icuBeds: availabilityData.icuBeds,
+          generalBeds: availabilityData.generalBeds,
+          oxygenBeds: availabilityData.oxygenBeds,
+          ventilators: availabilityData.ventilators,
+          ambulances: availabilityData.ambulances
+        });
+        setLastUpdated(new Date(availabilityData.lastUpdated));
+      } else {
+        // Initialize with default values
+        const defaultAvailability = {
+          icuBeds: { total: 50, available: 15, occupied: 35 },
+          generalBeds: { total: 200, available: 45, occupied: 155 },
+          oxygenBeds: { total: 80, available: 20, occupied: 60 },
+          ventilators: { total: 25, available: 8, occupied: 17 },
+          ambulances: { total: 8, available: 3, onDuty: 5 }
+        };
+        setFormData(defaultAvailability);
+      }
       
     } catch (error) {
       setError('Failed to load hospital data');
@@ -99,14 +114,13 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({ hospitalId
       setSaving(true);
       setError('');
       
-      const user = AuthService.getCurrentUser();
-      if (!user) {
+      const session = await AuthService.getCurrentSession();
+      if (!session?.user) {
         setError('User not authenticated');
         return;
       }
 
-      const updateData: BedAvailability = {
-        id: `availability_${hospitalId}`,
+      const updateData: Omit<BedAvailability, 'id' | 'lastUpdated'> = {
         hospitalId,
         icuBeds: {
           ...formData.icuBeds,
@@ -128,17 +142,26 @@ export const HospitalDashboard: React.FC<HospitalDashboardProps> = ({ hospitalId
           ...formData.ambulances,
           onDuty: formData.ambulances.total - formData.ambulances.available
         },
+        updatedBy: session.user.id
+      };
+
+      // Update in database
+      await HospitalService.updateBedAvailability(updateData);
+
+      // Create full availability object for local state
+      const fullAvailability: BedAvailability = {
+        id: `availability_${hospitalId}`,
         lastUpdated: new Date().toISOString(),
-        updatedBy: user.uid
+        ...updateData
       };
 
       // Update local state
-      setAvailability(updateData);
+      setAvailability(fullAvailability);
       setLastUpdated(new Date());
       
       // Call the callback to update parent component
       if (onDataUpdate) {
-        onDataUpdate(updateData);
+        onDataUpdate(fullAvailability);
       }
       
       setSuccess('Data updated successfully!');

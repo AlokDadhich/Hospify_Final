@@ -1,10 +1,10 @@
 import React from 'react';
 import { Activity, Phone, User, LogOut, Settings } from 'lucide-react';
-import { User as FirebaseUser } from 'firebase/auth';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface HeaderProps {
   onEmergencyClick: () => void;
-  user?: FirebaseUser | null;
+  user?: SupabaseUser | null;
   onAuthClick?: () => void;
   onSignOut?: () => void;
 }
@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
             {user ? (
               <div className="flex items-center space-x-3">
                 <span className="text-gray-700 text-sm">
-                  Welcome, {user.displayName || user.email}
+                  Welcome, {user.user_metadata?.display_name || user.email}
                 </span>
                 <button
                   onClick={() => window.location.href = '/dashboard'}

@@ -103,14 +103,25 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
         email: formData.email,
         registrationNumber: formData.registrationNumber,
         location: {
-          latitude: parseFloat(formData.latitude) || 0,
-          longitude: parseFloat(formData.longitude) || 0
+          latitude: parseFloat(formData.latitude) || 18.5204, // Default to Pune
+          longitude: parseFloat(formData.longitude) || 73.8567
         },
         isVerified: false,
-        adminUserId: user.uid
+        adminUserId: user.id
       });
 
-      setSuccess('Registration successful! Please check your email for verification.');
+      // Create initial bed availability
+      await HospitalService.updateBedAvailability({
+        hospitalId,
+        icuBeds: { total: 0, available: 0, occupied: 0 },
+        generalBeds: { total: 0, available: 0, occupied: 0 },
+        oxygenBeds: { total: 0, available: 0, occupied: 0 },
+        ventilators: { total: 0, available: 0, occupied: 0 },
+        ambulances: { total: 0, available: 0, onDuty: 0 },
+        updatedBy: user.id
+      });
+
+      setSuccess('Registration successful! You can now sign in and manage your hospital data.');
       setTimeout(() => {
         onSuccess();
       }, 2000);
@@ -133,7 +144,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
           });
         },
         (error) => {
-          setError('Unable to get location. Please enter coordinates manually.');
+          setError('Unable to get location. Please enter coordinates manually or use default Pune location.');
         }
       );
     } else {
@@ -319,7 +330,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Mumbai"
+              placeholder="Pune"
             />
           </div>
 
@@ -343,7 +354,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
               value={formData.pincode}
               onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="400001"
+              placeholder="411001"
             />
           </div>
 
@@ -358,7 +369,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="+91-22-1234-5678"
+              placeholder="+91-20-1234-5678"
             />
           </div>
 
@@ -385,7 +396,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
               value={formData.latitude}
               onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="19.0760"
+              placeholder="18.5204 (Pune default)"
             />
           </div>
 
@@ -397,7 +408,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchT
               value={formData.longitude}
               onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="72.8777"
+              placeholder="73.8567 (Pune default)"
             />
           </div>
         </div>
